@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "timer.h"
+#include "timer_tad.h"
 
 
 // incluir isso aqui depois q ja tiver implementado
