@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     FILE *log = fopen("medicoes.log", "w");
     if (log){
         fprintf(log, "-- METRICAS INICIAIS --  \n");
-        fprintf(log, "Tempo de carregametno: %.2f s\n", s);
+        fprintf(log, "Tempo de carregamento: %.2f s\n", s);
 
         fclose(log);
     }
