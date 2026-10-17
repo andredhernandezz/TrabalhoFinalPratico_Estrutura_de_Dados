@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "timer_tad.h"
+#include "timer.h"
 
 
 // incluir isso aqui depois q ja tiver implementado
@@ -65,10 +65,22 @@ int main(int argc, char *argv[]) {
                 printf("\nINICIANDO NOVO JOGO ...\n");
                 break;
             case 2:
-                printf("OBJETIVO DO JOGO: ...\n");
-                printf("INGREDIENTES E SIMBOLOS ... \n");
-                printf("ACOES DISPONIVEIS ... \n");
-                printf("CONIDCOES DE VITORIA E DERROTA ... \n");
+                printf("OBJETIVO DO JOGO: ...\n\n");
+                printf("INGREDIENTE\t\tSIMBOLO\tREQUER PREPARO?\tPERECIVEL?\n");
+                printf("Pao (de cima)\t\tz\tNao\t\tNao\n");
+                printf("Ketchup\t\t\tk\tNao\t\tNao\n");
+                printf("Mostarda\t\tm\tNao\t\tNao\n");
+                printf("Picles\t\t\tp\tNao\t\tNao\n");
+                printf("Alface\t\t\ta\tNao\t\tNao\n");
+                printf("Queijo suico\t\ts\tSim\t\tNao\n");
+                printf("Queijo cheddar\t\tq\tSim\t\tNao\n");
+                printf("Cebola\t\t\tc\tSim\t\tNao\n");
+                printf("Tomate\t\t\tt\tSim\t\tNao\n");
+                printf("Carne\t\t\tn\tSim\t\tSim\n");
+                printf("Ovo frito\t\to\tSim\t\tSim\n");
+                printf("Bacon\t\t\tb\tSim\t\tSim\n\n");
+                printf("ACOES DISPONIVEIS ... \n\n");
+                printf("CONIDCOES DE VITORIA E DERROTA ... \n\n");
                 break;
             case 3:
                 printf("\nEXIBINDO HISTORICO: ...\n");
