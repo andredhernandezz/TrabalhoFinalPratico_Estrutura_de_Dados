@@ -28,10 +28,13 @@ int frenteFila(const FilaEnc *f, Cliente *cliente){
 } 
 
 int enqueue(FilaEnc *f, Cliente cliente){
-    Nodo *novo = (Nodo*) malloc(sizeof(Nodo));
+    
 
     if (f == NULL || novo == NULL)
         return -1; // retorna erro por fila não inicializada ou falha na alocação de memória
+        
+    Nodo *novo = (Nodo*) malloc(sizeof(Nodo));
+
     if (novo == NULL)
         return 0;
 

@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
                 printf("Ovo frito\t\to\tSim\t\tSim\n");
                 printf("Bacon\t\t\tb\tSim\t\tSim\n\n");
                 printf("ACOES DISPONIVEIS:\nPreparar um ingrediente: consome um turno\nAdicionar um ingrediente ao hamburguer: consome um turno\nRemover o ingrediente do topo do hamburguer: consome um turno\nAcoes de consulta(ver estoque, ver pedido, etc.): nao consomem turno \n\n");
-                printf("CONIDCOES DE VITORIA E DERROTA ... \n\n");
+                printf("CONDICOES DE VITORIA E DERROTA ... \n\n");
                 break;
             case 3:
                 printf("\nEXIBINDO HISTORICO: ...\n");
