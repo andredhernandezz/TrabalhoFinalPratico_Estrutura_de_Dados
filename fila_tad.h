@@ -1,9 +1,6 @@
 #ifndef FILA_TAD_H
 #define FILA_TAD_H
-
-typedef struct {
-    char ingredientes[15];
-} Pedido;
+#include "pedido.h"
 
 typedef struct {
     char nome[50];

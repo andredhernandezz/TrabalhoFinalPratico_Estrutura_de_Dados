@@ -1,34 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "timer.h"
+#include "avl_tad.h"
+#include "carregamento.h"
 
 
-// incluir isso aqui depois q ja tiver implementado
-
-// #include "avl.h"
-// #include "lista.h"
-// #include "hash.h"
-// #include "heap.h"
-// #include "pilha.h"
-// #include "fila.h"
 int main(int argc, char *argv[]) {
-    
+    NodoAvl *raiz = NULL;
+
     if (argc < 3){
         printf("Argumentos passados incorretamente \nCorreto: %s <pedidos> <historico>\n", argv[0]);
         return 1;
     }
-    
+
+    /* carregamento dos pedidos na AVL (o timer mede so isso) */
     Timer t;
     timer_iniciar(&t);
+    int lidos = carregarPedidos(argv[1], &raiz);
+    double s = timer_parar(&t);
+    int alturaAvl = avlAltura(raiz);
 
-    FILE *pedidos = fopen(argv[1], "r");
-    if (!pedidos){
+    if (lidos < 0){
         printf("Erro ao abrir arquivo de pedidos: %s\n", argv[1]);
         return 1;
     }
+    printf("Pedidos carregados: %d | Tempo: %.6f s\n", lidos, s);
+    printf("Altura da arvore: %d\n", alturaAvl);
 
-    fclose(pedidos);
-
+    /* historico: por enquanto so verifica se existe;
+       depois sera carregado na lista contigua */
     FILE *historico = fopen(argv[2], "r");
     if (!historico){
         printf("Historico nao encontrado, abrindo um vazio. \n");
@@ -37,13 +37,11 @@ int main(int argc, char *argv[]) {
         fclose(historico);
     }
 
-    double s = timer_parar(&t);
-    printf("Tempo: %.6f s\n", s);
-
     FILE *log = fopen("medicoes.log", "w");
     if (log){
-        fprintf(log, "-- METRICAS INICIAIS --  \n");
-        fprintf(log, "Tempo de carregamento: %.2f s\n", s);
+        fprintf(log, "-- AVL: carregamento --\n");
+        fprintf(log, "Tempo de carregamento: %.6f s\n", s);
+        /* aqui entram depois: nos inseridos, altura, rotacoes */
 
         fclose(log);
     }
@@ -95,6 +93,6 @@ int main(int argc, char *argv[]) {
 
     } while (opcao != 0);
 
-    
+    avlDestruir(raiz);
     return 0;
 }
