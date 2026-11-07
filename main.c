@@ -13,12 +13,17 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* carregamento dos pedidos na AVL (o timer mede so isso) */
+    avlZerarMetricas(); // ZERA AS METRICAS DA AVL 
+
     Timer t;
     timer_iniciar(&t);
     int lidos = carregarPedidos(argv[1], &raiz);
     double s = timer_parar(&t);
+
+
     int alturaAvl = avlAltura(raiz);
+    Contador metricasAVL;
+    metricasAVL = avlObterMetricas();
 
     if (lidos < 0){
         printf("Erro ao abrir arquivo de pedidos: %s\n", argv[1]);
@@ -41,7 +46,11 @@ int main(int argc, char *argv[]) {
     if (log){
         fprintf(log, "-- AVL: carregamento --\n");
         fprintf(log, "Tempo de carregamento: %.6f s\n", s);
-        /* aqui entram depois: nos inseridos, altura, rotacoes */
+        fprintf(log, "Nos inseridos: %d\n", metricasAVL.nosInserido);
+        fprintf(log, "Altura da AVL: %d\n", alturaAvl);
+        fprintf(log, "Numero de rotacoes na AVL: %d\n", metricasAVL.rotacoes);
+        
+
 
         fclose(log);
     }

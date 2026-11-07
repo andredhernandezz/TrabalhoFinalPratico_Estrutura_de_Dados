@@ -126,7 +126,7 @@ NodoAvl* avlInserir(NodoAvl *raiz, Pedido valor) {
         novo->dado   = valor;
         novo->esq    = NULL;
         novo->dir    = NULL;
-        novo->altura = 0;
+        novo->altura = 1;
         return novo;
     }
     if (valor.cod < raiz->dado.cod){

@@ -1,2 +1,5 @@
 -- AVL: carregamento --
-Tempo de carregamento: 0.703000 s
+Tempo de carregamento: 0.965000 s
+Nos inseridos: 837253
+Altura da AVL: 20
+Numero de rotacoes na AVL: 837233
