@@ -11,6 +11,17 @@ struct str_NodoAvl {
     int altura;   /* folha = 0; NULL = -1 (por convenção) */
 };
 
+typedef struct {
+    int rotacoes;
+    int nosInserido;
+    int comparacoes;
+} Contador;
+
+
+void avlZerarMetricas(void);
+Contador avlObterMetricas(void);
+
+
 int avlAltura(const NodoAvl *no);
 int avlFb(const NodoAvl *no);
 void avlAtualizarAltura(NodoAvl *no);

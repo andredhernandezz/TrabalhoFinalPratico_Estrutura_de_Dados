@@ -1,6 +1,21 @@
 #include <stdlib.h>
 #include "avl_tad.h"
 
+static Contador contador;
+
+
+void avlZerarMetricas(void){
+    contador.rotacoes = 0;
+    contador.nosInserido = 0;
+    contador.comparacoes = 0;
+}
+
+Contador avlObterMetricas(void){
+    return contador;
+}
+
+
+
 
 int avlAltura(const NodoAvl *no) {
     if (no == NULL) return 0;
@@ -37,6 +52,7 @@ NodoAvl* avlRotDir(NodoAvl *y) {
     y->esq = B;
     avlAtualizarAltura(y);
     avlAtualizarAltura(x);
+    contador.rotacoes++;
     return x;
 }
 
@@ -49,6 +65,7 @@ NodoAvl* avlRotEsq(NodoAvl *x) {
     x->dir = B;
     avlAtualizarAltura(x);
     avlAtualizarAltura(y);
+    contador.rotacoes++;
     return y;
 }
 

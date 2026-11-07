@@ -1,12 +1,7 @@
 #include <stdio.h>
 #include "avl_tad.h"
-
-/* >>> ADAPTE estas duas linhas ao seu contador de rotacoes <<<
-   ex. com global:  #define ZERAR_ROTACOES() (rotacoes = 0)
-                    #define LER_ROTACOES()   (rotacoes)
-   ex. com struct:  use o campo da sua struct de metricas       */
-#define ZERAR_ROTACOES()  /* ... */
-#define LER_ROTACOES()    (-1)
+#define ZERAR_ROTACOES()  avlZerarMetricas()
+#define LER_ROTACOES()    (avlObterMetricas().rotacoes)
 
 /* Insere 3 codigos numa arvore nova e confere rotacoes e altura. */
 static int testaCaso(const char *nome, int a, int b, int c,
