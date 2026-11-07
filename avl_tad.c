@@ -16,7 +16,6 @@ Contador avlObterMetricas(void){
 
 
 
-
 int avlAltura(const NodoAvl *no) {
     if (no == NULL) return 0;
     if ((no->esq == NULL) && (no->dir == NULL)){
@@ -100,9 +99,17 @@ NodoAvl* avlReequilibrar(NodoAvl *raiz) {
 
 /* Busca: idêntica à Abp — a altura garantida torna-a O(log n). */
 NodoAvl* avlBuscar(NodoAvl *raiz, int cod) {
-    if (raiz == NULL)           return NULL;
-    if (cod == raiz->dado.cod) return raiz;
-    if (cod < raiz->dado.cod)  return avlBuscar(raiz->esq, cod);
+    if (raiz == NULL)
+        return NULL;
+    if (cod == raiz->dado.cod){
+        contador.comparacoes++;
+        return raiz;
+    }
+    if (cod < raiz->dado.cod){
+        contador.comparacoes++;
+        return avlBuscar(raiz->esq, cod);
+    }
+    contador.comparacoes++;
     return avlBuscar(raiz->dir, cod);
 }
 
@@ -112,16 +119,22 @@ NodoAvl* avlBuscar(NodoAvl *raiz, int cod) {
 NodoAvl* avlInserir(NodoAvl *raiz, Pedido valor) {
     if (raiz == NULL) {
         NodoAvl *novo = (NodoAvl*) malloc(sizeof(NodoAvl));
+        if (novo == NULL){
+            return NULL;
+        }
+        contador.nosInserido++;
         novo->dado   = valor;
         novo->esq    = NULL;
         novo->dir    = NULL;
         novo->altura = 0;
         return novo;
     }
-    if (valor.cod < raiz->dado.cod)
+    if (valor.cod < raiz->dado.cod){
         raiz->esq = avlInserir(raiz->esq, valor);
-    else if (valor.cod > raiz->dado.cod)
+    }
+    else if (valor.cod > raiz->dado.cod){
         raiz->dir = avlInserir(raiz->dir, valor);
+    }
     else
         return raiz;   /* duplicado: ignora */
     return avlReequilibrar(raiz);
