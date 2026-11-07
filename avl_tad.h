@@ -8,7 +8,7 @@ struct str_NodoAvl {
     Pedido  dado;
     NodoAvl *esq;
     NodoAvl *dir;
-    int altura;   /* folha = 0; NULL = -1 (por convenção) */
+    int altura;
 };
 
 typedef struct {
@@ -30,8 +30,6 @@ NodoAvl* avlRotEsq(NodoAvl *x);
 NodoAvl* avlReequilibrar(NodoAvl *raiz);
 NodoAvl* avlBuscar(NodoAvl *raiz, int cod);
 NodoAvl* avlInserir(NodoAvl *raiz, Pedido valor);
-NodoAvl* avlMinimo(NodoAvl *raiz);
-NodoAvl* avlRemover(NodoAvl *raiz, int cod);
 NodoAvl* avlDestruir(NodoAvl *raiz);
 
 
