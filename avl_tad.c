@@ -140,37 +140,6 @@ NodoAvl* avlInserir(NodoAvl *raiz, Pedido valor) {
     return avlReequilibrar(raiz);
 }
 
-/* Auxiliar: menor nó da subárvore (sucessor em-ordem). */
-NodoAvl* avlMinimo(NodoAvl *raiz) {
-    while (raiz->esq != NULL) raiz = raiz->esq;
-    return raiz;
-}
-
-/* Remoção: mesmos três casos da Abp; na subida, reequilibra cada ancestral.
-   Podem ser necessárias múltiplas rotações (uma por nível desequilibrado).
-   Uso: raiz = avlRemover(raiz, cod); */
-NodoAvl* avlRemover(NodoAvl *raiz, int cod) {
-    if (raiz == NULL) return NULL;
-
-    if (cod < raiz->dado.cod) {
-        raiz->esq = avlRemover(raiz->esq, cod);
-    } else if (cod > raiz->dado.cod) {
-        raiz->dir = avlRemover(raiz->dir, cod);
-    } else {
-        if (raiz->esq == NULL) {
-            NodoAvl *filho = raiz->dir; free(raiz); return filho;
-        }
-        if (raiz->dir == NULL) {
-            NodoAvl *filho = raiz->esq; free(raiz); return filho;
-        }
-        /* dois filhos: substitui pelo sucessor em-ordem */
-        NodoAvl *sucessor = avlMinimo(raiz->dir);
-        raiz->dado = sucessor->dado;
-        raiz->dir  = avlRemover(raiz->dir, sucessor->dado.cod);
-    }
-    return avlReequilibrar(raiz);
-}
-
 /* Destroi toda a árvore em pós-ordem.
    Uso: raiz = avlDestruir(raiz); */
 NodoAvl* avlDestruir(NodoAvl *raiz) {

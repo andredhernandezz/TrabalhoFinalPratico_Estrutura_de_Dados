@@ -3,6 +3,9 @@
 #include "timer.h"
 #include "avl_tad.h"
 #include "carregamento.h"
+#include "historico.h"
+#include "lista_contig_tad.h"
+
 
 
 int main(int argc, char *argv[]) {
@@ -32,15 +35,11 @@ int main(int argc, char *argv[]) {
     printf("Pedidos carregados: %d | Tempo: %.6f s\n", lidos, s);
     printf("Altura da arvore: %d\n", alturaAvl);
 
-    /* historico: por enquanto so verifica se existe;
-       depois sera carregado na lista contigua */
-    FILE *historico = fopen(argv[2], "r");
-    if (!historico){
-        printf("Historico nao encontrado, abrindo um vazio. \n");
-    }
-    else {
-        fclose(historico);
-    }
+    ListaContig hist;
+    inicializaListaContig(&hist);
+    int nHist = carregarHistorico(argv[2], &hist);
+    if (nHist == 0)
+        printf("Historico vazio ou nao encontrado.\n");
 
     FILE *log = fopen("medicoes.log", "w");
     if (log){
@@ -49,7 +48,8 @@ int main(int argc, char *argv[]) {
         fprintf(log, "Nos inseridos: %d\n", metricasAVL.nosInserido);
         fprintf(log, "Altura da AVL: %d\n", alturaAvl);
         fprintf(log, "Numero de rotacoes na AVL: %d\n", metricasAVL.rotacoes);
-        
+        fprintf(log, "\n-- Historico: carregamento --\n");
+    fprintf(log, "Entradas carregadas: %d\n", nHist);
 
 
         fclose(log);
@@ -103,5 +103,7 @@ int main(int argc, char *argv[]) {
     } while (opcao != 0);
 
     avlDestruir(raiz);
+    destroiListaContig(&hist);
+
     return 0;
 }
