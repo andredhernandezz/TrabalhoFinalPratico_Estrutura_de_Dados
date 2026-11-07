@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "historico.h"
+#include "ordenacao.h"
+#include "timer.h"
 
 #define MAX_LINHA 256
+#define MAX_NOME 20
+#define LINHAS_HISTORICO 20
 
 /* Le uma linha de f em buf, sem \r/\n. Descarta o excedente de linhas longas.
    Retorna 1 se leu, 0 se chegou ao fim do arquivo. */
@@ -45,4 +49,64 @@ int carregarHistorico(const char *nomeArquivo, ListaContig *lista) {
 
     fclose(f);
     return carregadas;
+}
+
+int salvarPartida(const char *nomeArquivo, ListaContig *lista, const char *nome, int pontuacao) {
+    if (!nomeArquivo || !lista || !nome)
+        return 0;
+ 
+    NovoHistorico h;
+    size_t n = strcspn(nome, "\r\n");        /* corta no primeiro \r ou \n */
+    if (n > MAX_NOME)
+        n = MAX_NOME;
+    memcpy(h.nome, nome, n);
+    h.nome[n] = '\0';
+    h.pontuacao = pontuacao;
+ 
+    FILE *f = fopen(nomeArquivo, "a");        /* append: nao apaga o que ja existe */
+    if (!f)
+        return 0;
+    int ok = fprintf(f, "%s\n%d\n", h.nome, h.pontuacao) > 0;
+    if (fclose(f) != 0)
+        ok = 0;
+    if (!ok)
+        return 0;
+ 
+    return insereFimContig(lista, h) == 1;
+}
+ 
+int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempoOrdenacao) {
+    ListaContig copia;
+    if (copiaListaContig(lista, &copia) != 1)
+        return -1;
+ 
+    Timer t;
+    timer_iniciar(&t);
+    int ok = porPontuacao ? quicksortPontuacao(&copia)
+                          : quicksortAlfabetico(&copia);
+    double s = timer_parar(&t);
+ 
+    if (ok != 1) {
+        destroiListaContig(&copia);
+        return -1;
+    }
+    if (tempoOrdenacao)
+        *tempoOrdenacao = s;
+ 
+    int total = tamanhoListaContig(&copia);
+    printf("---- HISTORICO (%s) ----\n",
+           porPontuacao ? "pontuacao decrescente" : "ordem alfabetica");
+    if (total == 0)
+        printf("Nenhuma partida registrada.\n");
+ 
+    for (int i = 0; i < total && i < LINHAS_HISTORICO; i++) {
+        NovoHistorico h;
+        obtemContig(&copia, i, &h);
+        printf("%3d. %-20s %d\n", i + 1, h.nome, h.pontuacao);
+    }
+    if (total > LINHAS_HISTORICO)
+        printf("... e mais %d entradas\n", total - LINHAS_HISTORICO);
+ 
+    destroiListaContig(&copia);
+    return total;
 }

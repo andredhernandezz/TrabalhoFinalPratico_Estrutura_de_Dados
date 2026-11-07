@@ -4,6 +4,7 @@
 #include "avl_tad.h"
 #include "carregamento.h"
 #include "historico.h"
+#include "metricas.h"
 #include "lista_contig_tad.h"
 
 
@@ -41,20 +42,9 @@ int main(int argc, char *argv[]) {
     if (nHist == 0)
         printf("Historico vazio ou nao encontrado.\n");
 
-    FILE *log = fopen("medicoes.log", "w");
-    if (log){
-        fprintf(log, "-- AVL: carregamento --\n");
-        fprintf(log, "Tempo de carregamento: %.6f s\n", s);
-        fprintf(log, "Nos inseridos: %d\n", metricasAVL.nosInserido);
-        fprintf(log, "Altura da AVL: %d\n", alturaAvl);
-        fprintf(log, "Numero de rotacoes na AVL: %d\n", metricasAVL.rotacoes);
-        fprintf(log, "\n-- Historico: carregamento --\n");
-    fprintf(log, "Entradas carregadas: %d\n", nHist);
-
-
-        fclose(log);
-    }
-
+    MetricasCarga carga = { metricasAVL.nosInserido, alturaAvl, metricasAVL.rotacoes, s, nHist };
+    if (!metricasLogCarga("medicoes.log", &carga))
+        printf("Aviso: nao foi possivel gravar medicoes.log\n");
 
     int opcao = -1;
     do {
@@ -90,7 +80,29 @@ int main(int argc, char *argv[]) {
                 printf("CONDICOES DE VITORIA E DERROTA ... \n\n");
                 break;
             case 3:
-                printf("\nEXIBINDO HISTORICO: ...\n");
+                {
+                    int ordem = 0;
+                    printf("Ordenar por: 1 = ordem alfabetica, 2 = pontuacao decrescente: ");
+                    if (scanf("%d", &ordem) != 1 || (ordem != 1 && ordem != 2)) {
+                        int c;
+                        while ((c = getchar()) != '\n' && c != EOF) {}
+                        printf("\n OPCAO INVALIDA \n");
+                        break;
+                    }
+                    int porPontuacao = 0;
+                    const char *nomeAlgoritmo = "Quicksort (alfabetico)";
+                    if (ordem == 2) {
+                        porPontuacao = 1;
+                        nomeAlgoritmo = "Quicksort (pontuacao)";
+                    }
+
+                    double tOrd = 0.0;
+                    int tam = mostrarHistorico(&hist, porPontuacao, &tOrd);
+                    if (tam < 0)
+                        printf("Erro ao ordenar o historico.\n");
+                    else
+                        metricasLogOrdenacao("medicoes.log", nomeAlgoritmo, tam, tOrd);
+                }
                 break;
             case 0:
                 printf("\nSAINDO DO JOGO ... \n");

@@ -5,4 +5,10 @@
 
 int carregarHistorico(const char *nomeArquivo, ListaContig *lista);
 
+int salvarPartida(const char *nomeArquivo, ListaContig *lista, const char *nome, int pontuacao);
+
+int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempoOrdenacao);
+
 #endif
+
+ 
