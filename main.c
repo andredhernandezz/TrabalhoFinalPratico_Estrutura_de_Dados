@@ -8,13 +8,13 @@
 #include "hash_tad.h"
 #include "busca.h"
 #include "lista_contig_tad.h"
+#include "fila_tad.h"
 
 /* PRA QUANDO EXISTIR A LOGICA DO JOGO:
-hashInicializar() NO COMECO DA PARTIDA
-buscarPedido PRA CADA CLIENTE
-metricasRelatorioPartida NO FIM
+int buscarPedido(NodoAvl *raiz, TabelaHash *cache, int cod, Pedido *out, MetricasBusca *mb);
+int salvarPartida(const char *arq, ListaContig *lista, const char *nome, int pontuacao);
+int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempo);
 */
-
 
 int main(int argc, char *argv[]) {
     NodoAvl *raiz = NULL;
