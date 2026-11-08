@@ -5,8 +5,15 @@
 #include "carregamento.h"
 #include "historico.h"
 #include "metricas.h"
+#include "hash_tad.h"
+#include "busca.h"
 #include "lista_contig_tad.h"
 
+/* PRA QUANDO EXISTIR A LOGICA DO JOGO:
+hashInicializar() NO COMECO DA PARTIDA
+buscarPedido PRA CADA CLIENTE
+metricasRelatorioPartida NO FIM
+*/
 
 
 int main(int argc, char *argv[]) {

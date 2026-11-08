@@ -1,0 +1,28 @@
+
+=== RELATORIO DE DESEMPENHO ===
+
+-- AVL: carregamento --
+Nos inseridos:                   837253
+Altura resultante:               20
+Rotacoes (insercao):             837233
+Tempo de carregamento:           0.861000 s
+
+-- Historico: carregamento --
+Entradas carregadas:             100000
+
+-- AVL: buscas durante a partida --
+Total de buscas:                 290
+Total de comparacoes:            5528
+Media de comparacoes por busca:  19.06
+Tempo total acumulado:           0.000000 s
+
+-- Tabela hash --
+Tamanho (m):                     101
+Entradas ocupadas (n):           290
+Fator de carga (lambda):         2.87
+Total de hits:                   710
+Total de misses:                 290
+Taxa de acerto:                  71.0%
+Total de colisoes:               189
+
+================================

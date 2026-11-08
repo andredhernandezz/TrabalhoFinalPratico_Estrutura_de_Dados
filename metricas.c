@@ -21,6 +21,21 @@ static void escreveBuscas(FILE *out, const MetricasBusca *b) {
     fprintf(out, "Tempo total acumulado:           %.6f s\n", b->tempo);
 }
 
+static void escreveHash(FILE *out, const MetricasHash *h) {
+    long total = h->hits + h->misses;
+    double lambda = (h->m > 0) ? (double)h->n / h->m : 0.0;
+    double taxa = (total > 0) ? 100.0 * (double)h->hits / total : 0.0;
+
+    fprintf(out, "-- Tabela hash --\n");
+    fprintf(out, "Tamanho (m):                     %d\n", h->m);
+    fprintf(out, "Entradas ocupadas (n):           %d\n", h->n);
+    fprintf(out, "Fator de carga (lambda):         %.2f\n", lambda);
+    fprintf(out, "Total de hits:                   %ld\n", h->hits);
+    fprintf(out, "Total de misses:                 %ld\n", h->misses);
+    fprintf(out, "Taxa de acerto:                  %.1f%%\n", taxa);
+    fprintf(out, "Total de colisoes:               %ld\n", h->colisoes);
+}
+
 static void escreveOrdenacao(FILE *out, const char *alg, int tamanho, double tempo) {
     fprintf(out, "-- Ordenacao do historico (ao acessar Historico) --\n");
     fprintf(out, "Tamanho: %d entradas\n", tamanho);
@@ -28,7 +43,7 @@ static void escreveOrdenacao(FILE *out, const char *alg, int tamanho, double tem
 }
 
 int metricasLogCarga(const char *arqLog, const MetricasCarga *c) {
-    FILE *f = fopen(arqLog, "w");               /* "w": recria a cada execucao */
+    FILE *f = fopen(arqLog, "w");
     if (!f)
         return 0;
     escreveCarga(f, c);
@@ -37,9 +52,9 @@ int metricasLogCarga(const char *arqLog, const MetricasCarga *c) {
 }
 
 int metricasRelatorioPartida(const char *arqLog, const MetricasCarga *c,
-                             const MetricasBusca *b) {
+                             const MetricasBusca *b, const MetricasHash *h) {
     FILE *f = fopen(arqLog, "a");
-    for (int i = 0; i < 2; i++) {               /* i=0: tela, i=1: arquivo */
+    for (int i = 0; i < 2; i++) { // i=0: tela, i=1: arquivo
         FILE *out = (i == 0) ? stdout : f;
         if (!out)
             continue;
@@ -47,7 +62,8 @@ int metricasRelatorioPartida(const char *arqLog, const MetricasCarga *c,
         escreveCarga(out, c);
         fprintf(out, "\n");
         escreveBuscas(out, b);
-        /* TODO (passo 2): secao "-- Tabela hash --" quando a hash existir */
+        fprintf(out, "\n");
+        escreveHash(out, h);
         fprintf(out, "\n================================\n");
     }
     if (f)
