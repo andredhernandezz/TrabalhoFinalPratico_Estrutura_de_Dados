@@ -4,10 +4,6 @@
 
 #define CAP 1024
 
-#define VENC_CARNE 4
-#define VENC_OVO 3
-#define VENC_BACON 5
-
 typedef struct {
     int dados[CAP];
     int tam;
