@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "timer.h"
 #include "avl_tad.h"
 #include "carregamento.h"
@@ -9,12 +10,15 @@
 #include "busca.h"
 #include "lista_contig_tad.h"
 #include "fila_tad.h"
+#include "ordenacao.h"
 
 /* PRA QUANDO EXISTIR A LOGICA DO JOGO:
 int buscarPedido(NodoAvl *raiz, TabelaHash *cache, int cod, Pedido *out, MetricasBusca *mb);
 int salvarPartida(const char *arq, ListaContig *lista, const char *nome, int pontuacao);
 int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempo);
 */
+
+
 
 int main(int argc, char *argv[]) {
     NodoAvl *raiz = NULL;
@@ -103,12 +107,34 @@ int main(int argc, char *argv[]) {
                         nomeAlgoritmo = "Quicksort (pontuacao)";
                     }
 
+                    // NOVO: guarda uma copia da lista antes do quicksort mexer nela
+                    ListaContig base = hist;
+                    base.dados = NULL;
+                    if (hist.tamanho > 0) {
+                        base.dados = (NovoHistorico *) malloc(hist.tamanho * sizeof(NovoHistorico));
+                        if (base.dados != NULL)
+                            memcpy(base.dados, hist.dados, hist.tamanho * sizeof(NovoHistorico));
+                    }
+
                     double tOrd = 0.0;
                     int tam = mostrarHistorico(&hist, porPontuacao, &tOrd);
                     if (tam < 0)
                         printf("Erro ao ordenar o historico.\n");
-                    else
+                    else {
                         metricasLogOrdenacao("medicoes.log", nomeAlgoritmo, tam, tOrd);
+
+                        // NOVO: mesmos testes de tempo para mergesort e bubble sort
+                        if (base.dados != NULL) {
+                            if (porPontuacao) {
+                                testarOrdenacao("Mergesort (pontuacao)", mergesortPontuacao, &base);
+                                testarOrdenacao("Bubble sort (pontuacao)", bubbleSortPontuacao, &base);
+                            } else {
+                                testarOrdenacao("Mergesort (alfabetico)", mergesortAlfabetico, &base);
+                                testarOrdenacao("Bubble sort (alfabetico)", bubbleSortAlfabetico, &base);
+                            }
+                        }
+                    }
+                    free(base.dados); // NOVO
                 }
                 break;
             case 0:

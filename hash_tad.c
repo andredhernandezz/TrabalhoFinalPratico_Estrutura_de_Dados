@@ -21,12 +21,14 @@ int hashInicializar(TabelaHash *t, int m){
 
 }
 int hashBuscar(TabelaHash *t, int cod, Pedido *out) {
-    for (NoHash *p = t->tab[hashDivisao(cod, t->m)]; p != NULL; p = p->prox) {
+    NoHash *p = t->tab[hashDivisao(cod, t->m)];
+    while (p != NULL) {
         if (p->dado.cod == cod) {
             *out = p->dado;
             t->hits++;
             return 1;
         }
+        p = p->prox;
     }
     t->misses++;
     return 0;
@@ -34,18 +36,21 @@ int hashBuscar(TabelaHash *t, int cod, Pedido *out) {
  
 int hashInserir(TabelaHash *t, Pedido ped) {
     int i = hashDivisao(ped.cod, t->m);
- 
-    for (NoHash *p = t->tab[i]; p != NULL; p = p->prox)
+
+    NoHash *p = t->tab[i];
+    while (p != NULL) {
         if (p->dado.cod == ped.cod)
             return 1; // ja esta no cache
- 
+        p = p->prox;
+    }
+
     NoHash *novo = (NoHash *) malloc(sizeof(NoHash));
     if (novo == NULL)
         return 0;
- 
+
     if (t->tab[i] != NULL) // posicao ja ocupada: 1 colisao
         t->colisoes++;
- 
+
     novo->dado = ped;
     novo->prox = t->tab[i];
     t->tab[i] = novo;
