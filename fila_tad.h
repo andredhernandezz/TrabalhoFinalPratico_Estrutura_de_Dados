@@ -5,7 +5,6 @@
 typedef struct {
     char nome[50];
     Pedido pedido;
-    int paciencia;
 } Cliente;
 
 typedef struct str_Nodo Nodo;

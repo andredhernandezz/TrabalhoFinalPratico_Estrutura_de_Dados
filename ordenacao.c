@@ -288,7 +288,7 @@ int mergesortPontuacao(ListaContig *lista){
 }
 
 
-static void testarOrdenacao(const char *nome, int (*alg)(ListaContig *), const ListaContig *base) {
+void testarOrdenacao(const char *nome, int (*alg)(ListaContig *), const ListaContig *base) {
     ListaContig copia = *base;
     copia.dados = (NovoHistorico *) malloc(base->tamanho * sizeof(NovoHistorico));
     if (copia.dados == NULL) {

@@ -21,6 +21,9 @@ int hashInicializar(TabelaHash *t, int m){
 
 }
 int hashBuscar(TabelaHash *t, int cod, Pedido *out) {
+    if (t == NULL || t->tab == NULL || out == NULL)
+        return 0;
+        
     NoHash *p = t->tab[hashDivisao(cod, t->m)];
     while (p != NULL) {
         if (p->dado.cod == cod) {
@@ -35,6 +38,9 @@ int hashBuscar(TabelaHash *t, int cod, Pedido *out) {
 }
  
 int hashInserir(TabelaHash *t, Pedido ped) {
+    if (t == NULL || t->tab == NULL)
+        return 0;
+
     int i = hashDivisao(ped.cod, t->m);
 
     NoHash *p = t->tab[i];
