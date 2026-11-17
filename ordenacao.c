@@ -6,6 +6,7 @@
 #include "metricas.h"
 
 
+// QUICKSORT
 
 int vemAntesNome(const NovoHistorico *a, const NovoHistorico *b) {
     int cmp = strcmp(a->nome, b->nome);
@@ -115,69 +116,7 @@ int quicksortPontuacao(ListaContig *lista){
     return 1;
 }
 
-/* ================= BUBBLE SORT ================= */
-
-int bubbleSortAlfabetico(ListaContig *lista){
-    if (lista == NULL || lista->dados == NULL){
-        return -1;
-    }
-
-    if (lista->tamanho < 2){
-        return 1;
-    }
-
-    NovoHistorico *v = lista->dados;
-    NovoHistorico temp;
-    int n = lista->tamanho;
-    int trocou;
-
-    do {
-        trocou = 0;
-        for (int i = 0; i < n - 1; i++){
-            if (vemAntesNome(&v[i + 1], &v[i])){
-                temp = v[i];
-                v[i] = v[i + 1];
-                v[i + 1] = temp;
-                trocou = 1;
-            }
-        }
-        n--;
-    } while (trocou);
-
-    return 1;
-}
-
-int bubbleSortPontuacao(ListaContig *lista){
-    if (lista == NULL || lista->dados == NULL){
-        return -1;
-    }
-
-    if (lista->tamanho < 2){
-        return 1;
-    }
-
-    NovoHistorico *v = lista->dados;
-    NovoHistorico temp;
-    int n = lista->tamanho;
-    int trocou;
-
-    do {
-        trocou = 0;
-        for (int i = 0; i < n - 1; i++){
-            if (vemAntesPontuacao(&v[i + 1], &v[i])){
-                temp = v[i];
-                v[i] = v[i + 1];
-                v[i + 1] = temp;
-                trocou = 1;
-            }
-        }
-        n--;
-    } while (trocou);
-
-    return 1;
-}
-
-/* ================= MERGE SORT ================= */
+// MERGESORT
 
 void mergeAlfabetico(NovoHistorico *v, NovoHistorico *aux, int esq, int meio, int dir){
     int i = esq;

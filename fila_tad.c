@@ -99,7 +99,7 @@ void imprimeFila(const FilaEnc *f){
 
     printf("Clientes na fila:\n");
     while (aux != NULL) {
-        printf("Nome: %s, Pedido: %s, Paciência: %d\n", aux->cliente.nome, aux->cliente.pedido.ingredientes, aux->cliente.paciencia);
+        printf("Nome: %s, Pedido: %s", aux->cliente.nome, aux->cliente.pedido.ingredientes);
         aux = aux->prox;
     }
 }

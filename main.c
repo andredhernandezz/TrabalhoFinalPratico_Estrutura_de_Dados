@@ -123,14 +123,11 @@ int main(int argc, char *argv[]) {
                     else {
                         metricasLogOrdenacao("medicoes.log", nomeAlgoritmo, tam, tOrd);
 
-                        // NOVO: mesmos testes de tempo para mergesort e bubble sort
                         if (base.dados != NULL) {
                             if (porPontuacao) {
                                 testarOrdenacao("Mergesort (pontuacao)", mergesortPontuacao, &base);
-                                testarOrdenacao("Bubble sort (pontuacao)", bubbleSortPontuacao, &base);
                             } else {
                                 testarOrdenacao("Mergesort (alfabetico)", mergesortAlfabetico, &base);
-                                testarOrdenacao("Bubble sort (alfabetico)", bubbleSortAlfabetico, &base);
                             }
                         }
                     }
