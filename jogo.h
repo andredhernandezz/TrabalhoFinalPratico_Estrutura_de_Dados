@@ -24,10 +24,12 @@ typedef enum{
     ACAO_SUCESSO, // ação realizada com sucesso
     ACAO_SIMBOLO_INVALIDO, // símbolo digitado é inválido
     ACAO_SEM_ESTOQUE, // não há ingredientes suficientes em estoque
+    ACAO_ESTOQUE_CHEIO, // limite de armazenamento do ingrediente atingido
     ACAO_PRATO_FECHADO, // o prato já foi fechado e não pode ser modificado
     ACAO_PRATO_VAZIO, // não há ingredientes para remover
     ACAO_JOGO_ENCERRADO, // a partida já foi encerrada e não pode ser continuada
-    ACAO_ERRO_MEMORIA // erro de alocação de memória durante a execução da ação
+    ACAO_ERRO_MEMORIA, // erro de alocação de memória durante a execução da ação
+    ACAO_ERRO_INTERNO // ocorreu uma situação inesperada na lógica do jogo
 } ResultadoAcao;
 
 typedef struct{
@@ -65,7 +67,7 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo);
 ResultadoAcao jogoRemove(Jogo *j);
 
 // encerra a partida por decisão do jogador.
-void jogoAbandona(Jogo *j);
+ResultadoAcao jogoAbandona(Jogo *j);
 
 // libera a memória utilizada pelas estruturas da partida.
 void destroiJogo(Jogo *j);

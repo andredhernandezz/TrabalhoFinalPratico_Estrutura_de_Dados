@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
 #include "timer.h"
 #include "avl_tad.h"
 #include "carregamento.h"
@@ -18,9 +20,10 @@ int salvarPartida(const char *arq, ListaContig *lista, const char *nome, int pon
 int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempo);
 */
 
-
-
 int main(int argc, char *argv[]) {
+
+    srand((unsigned)time(NULL)); // inicializa o gerador de números aleatórios
+    
     NodoAvl *raiz = NULL;
 
     if (argc < 3){
@@ -147,5 +150,5 @@ int main(int argc, char *argv[]) {
     avlDestruir(raiz);
     destroiListaContig(&hist);
 
-    return 0;
+    return 0; 
 }
