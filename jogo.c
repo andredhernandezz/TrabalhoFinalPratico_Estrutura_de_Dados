@@ -317,49 +317,104 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
         }
     }
 
-    if (simbolo == 'z'){
+
+
+    if (simbolo == 'z') {
+
+        // Confere se o hamburguer montado corresponde a receita.
         resultado = pilhaConfereReceita(&j->prato, &j->receita);
 
         if (resultado < 0)
             return ACAO_ERRO_INTERNO;
-        
-        if (resultado == 1){
+
+        if (resultado == 1) {
+
             Cliente atendido;
 
-            // remove da fila o cliente atendido
-            if (dequeue(&j->clientes, &atendido) != 1) // confere o retorno da função
-                return ACAO_ERRO_INTERNO;
-            
-            j->atendidos++; // atualiza a quantidade de clientes atendidos
-            j->turno++; // consome um turno
+            // Se este for o ultimo cliente, nao precisamos
+            // preparar uma receita para um proximo cliente.
+            if (j->atendidos + 1 == j->totalClientes) {
 
-            // calcula a recompensa usando a paciência restante do cliente
-            j->pontuacao += RECOMPENSA_CLIENTE + BONUS_PACIENCIA * j->paciencia;
+                // Remove o cliente atendido da fila.
+                if (dequeue(&j->clientes, &atendido) != 1) {
+                    pop(&j->prato, &topo);
+                    return ACAO_ERRO_INTERNO;
+                }
 
-            if (j->atendidos == j->totalClientes){ // se todos os clientes foram atendidos
+                j->atendidos++;
+                j->turno++;
+
+                // Atualiza a pontuacao pelo cliente atendido.
+                j->pontuacao += RECOMPENSA_CLIENTE + BONUS_PACIENCIA * j->paciencia;
+
+                // Todos os clientes foram atendidos.
                 j->status = JOGO_VITORIA;
-                
+
                 return ACAO_SUCESSO;
             }
 
-            esvaziaPilha(&j->prato); // reinicia o prato para um proximo pedido
-
-            destroiLista(&j->receita); // libera a receita anterior para receber a proxima
-
+            /*
+             * Ainda existem clientes depois do atual.
+             * Primeiro prepara a receita do proximo cliente
+             * em uma lista temporaria.
+             */
             Cliente proximo;
+            ListaEnc proximaReceita;
 
-            // consulta o proximo cliente da fila
-            if (frenteFila(&j->clientes, &proximo) != 1){ // confere o retorno da funcao
+            inicializaLista(&proximaReceita);
+
+            // Consulta o segundo cliente sem alterar a fila.
+            if (segundoFila(&j->clientes, &proximo) != 1) {
+                destroiLista(&proximaReceita);
+                pop(&j->prato, &topo);
                 return ACAO_ERRO_INTERNO;
             }
 
-            // monta a receita do pedido do proximo cliente
-            if(!montaReceita(&j->receita, proximo.pedido.ingredientes)) // confere o retorno da funcao
-                return ACAO_ERRO_MEMORIA;
-            
-            j->paciencia = j->pacienciaMax; // proximo cliente começa com a paciencia maxima
+            // Monta a receita do proximo cliente.
+            if (!montaReceita(&proximaReceita, proximo.pedido.ingredientes)) {
 
-            verificaVencimentos(&j->estoque, j->turno); // elimina alimentos vencidos
+                destroiLista(&proximaReceita);
+
+                // Desfaz a insercao do pao superior.
+                pop(&j->prato, &topo);
+
+                return ACAO_ERRO_MEMORIA;
+            }
+
+            /*
+             * A proxima receita ja foi preparada.
+             * Agora podemos remover o cliente atual.
+             */
+            if (dequeue(&j->clientes, &atendido) != 1) {
+
+                destroiLista(&proximaReceita);
+                pop(&j->prato, &topo);
+
+                return ACAO_ERRO_INTERNO;
+            }
+
+            // Registra o atendimento.
+            j->atendidos++;
+            j->turno++;
+
+            // Atualiza a pontuacao.
+            j->pontuacao += RECOMPENSA_CLIENTE
+                      + BONUS_PACIENCIA * j->paciencia;
+
+            // Esvazia o hamburguer do cliente anterior.
+            esvaziaPilha(&j->prato);
+
+            // Libera a receita anterior.
+            destroiLista(&j->receita);
+
+            // Transfere a nova receita para a estrutura principal.
+            j->receita = proximaReceita;
+
+            // Reinicia a paciencia para o proximo cliente.
+            j->paciencia = j->pacienciaMax;
+
+            // Elimina ingredientes que venceram no novo turno.
+            verificaVencimentos(&j->estoque, j->turno);
 
             return ACAO_SUCESSO;
         }

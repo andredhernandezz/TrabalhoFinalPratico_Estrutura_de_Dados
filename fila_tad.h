@@ -33,4 +33,8 @@ int tamanhoFila(const FilaEnc *f);
 void imprimeFila(const FilaEnc *f); // imprime os clientes na fila
 void esvaziaFila(FilaEnc *f); // esvazia a fila, liberando memória
 
+// consulta os dados do segundo cliente da fila.
+// retorna 1 em caso de sucesso, 0 se nao existir segundo cliente e -1 se a fila ou o endereco de destino forem invalidos.
+int segundoFila(const FilaEnc *f, Cliente *cliente);
+
 #endif

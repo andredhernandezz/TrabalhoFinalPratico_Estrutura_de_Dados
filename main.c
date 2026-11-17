@@ -116,6 +116,188 @@ static void exibeEstado(const Jogo *j){
     printf("--=--=--=--=--=--=--=--=--=--=--=--=--=\n");
 }
 
+// traduz os retornos para mensagens que o usuario possa ler
+static void exibeResultado(ResultadoAcao resultado){
+    switch(resultado){
+        case ACAO_SUCESSO:
+            printf("Acao concluida");
+            break;
+        case ACAO_SIMBOLO_INVALIDO:
+            printf("\nSimbolo invalido!\n");
+            break;
+        case ACAO_SEM_ESTOQUE:
+            printf("\nEstoque vazio!\n");
+            break;
+        case ACAO_ESTOQUE_CHEIO:
+            printf("\nO estoque desse ingrediente esta cheio!\n");
+            break;
+        case ACAO_PRATO_FECHADO:
+            printf("\nO hamburguer ja esta fechado!\n");
+            break;
+        case ACAO_PRATO_VAZIO:
+            printf("\nNao ha ingredientes para remover!\n");
+            break;
+        case ACAO_JOGO_ENCERRADO:
+            printf("\nA partida nao esta em andamento.\n");
+            break;
+        case ACAO_ERRO_MEMORIA:
+            printf("\nErro de alocacao de memoria.\n");
+            break;
+        case ACAO_ERRO_INTERNO:
+            printf("\nOcorreu um erro interno.\n");
+            break;
+    }
+} 
+
+static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquivoHistorico, const MetricasCarga *carga){
+    Jogo jogo;
+    char nome[50];
+    int opcao;
+    char simbolo;
+    int leitura;
+    ResultadoAcao resultado;
+
+    // pede o nome do usuario para iniciar a partida
+    if (!leNome(nome, 50)) {
+        printf("Nome invalido. Partida cancelada.\n");
+        return;
+    }
+
+    // inicializa o jogo
+    if (!iniciaJogo(&jogo, raiz, MAX_CLIENTES, MAX_PACIENCIA)) {
+        printf("Erro ao inicializar a partida.\n");
+        return;
+    }
+
+    printf("Boa sorte, %s!\n", nome);
+
+    while (jogo.status == JOGO_ANDAMENTO){
+        exibeEstado(&jogo); // atualiza os dados da partida
+
+        printf("\n---------- MENU ----------\n");
+        printf("1 - Preparar ingrediente\n");
+        printf("2 - Adicionar ingrediente ao hamburguer\n");
+        printf("3 - Remover ingrediente do hamburguer\n");
+        printf("4 - Consultar estoque\n");
+        printf("5 - Consultar pedido atual\n");
+        printf("0 - Abandonar partida\n");
+        printf("--------------------------\n");
+
+        leitura = leInteiro(" ", &opcao); // entrada da acao escolhida
+
+        // se ocorrer erro de leitura, encerra a partida
+        if (leitura == 0) {
+            jogoAbandona(&jogo);
+            break;
+        }
+        if (leitura != 1){
+            printf("\nOpcao invalida.\n");
+            continue;
+        }
+
+        // executa a operacao da opcao escolhida
+        switch(opcao){
+            case 1:
+            case 2:
+                leitura = leSimbolo(&simbolo);
+
+                if (leitura != 1) {
+                    printf("Entrada de simbolo invalida.\n");
+                    break;
+                }
+
+                // chama a funcao correspondente no modulo jogo
+                if (opcao == 1)
+                    resultado = jogoPrepara(&jogo, simbolo);
+                else
+                    resultado = jogoAdiciona(&jogo, simbolo);
+
+                // exibe o resultado retornado pela operacao.
+                exibeResultado(resultado);
+                break;
+
+            case 3:
+                // remove o item de cima do prato
+                resultado = jogoRemove(&jogo);
+                exibeResultado(resultado);
+                break;
+            
+            case 4:
+                // consulta o estoque
+                exibeEstoque(&jogo.estoque);
+                break;
+            case 5:
+                // consulta o pedido
+                exibePedido(&jogo);
+                break;
+            case 0:
+                // encerra a partida
+                resultado = jogoAbandona(&jogo);
+                exibeResultado(resultado);
+                break;
+            default:
+                printf("Opcao invalida.\n");
+                break;
+
+        }
+
+    }
+
+    // fim do while = fim da partida
+    printf("--=--=--=--FIM DE JOGO--=--=--=--\n");
+
+    switch(jogo.status){
+        case JOGO_VITORIA:
+            printf("Parabens! Todos os clientes foram atendidos a tempo\n");
+            break;
+        case JOGO_DERROTA:
+            printf("Voce perdeu! Cliente cansou de esperar...\n");
+            break;
+        case JOGO_ABANDONO:
+            printf("Saindo...\n");
+            break;
+        default:
+            break;
+    }
+
+    printf("Jogador: %s\n", nome);
+
+    printf("Clientes atendidos: %d/%d\n",
+           jogo.atendidos, jogo.totalClientes);
+
+    printf("Pontuacao final: %d\n", jogo.pontuacao);
+
+    // registro do resultado
+    if (salvarPartida(arquivoHistorico, hist, nome, jogo.pontuacao))
+        printf("Partida registrada no historico.\n");
+    else
+        printf("Nao foi possivel salvar a partida no historico.\n");
+
+    // montagem do relatorio da partida
+    MetricasHash metricasHash = {
+        jogo.cache.m,
+        jogo.cache.n,
+        jogo.cache.hits,
+        jogo.cache.misses,
+        jogo.cache.colisoes
+    };
+    
+    // salva as metricas coletadas durante a partida
+    metricasRelatorioPartida(
+        "medicoes.log",
+        carga,
+        &jogo.buscas,
+        &metricasHash
+    );
+
+    // libera a memoria utilizada pelas estruturas do jogo
+    destroiJogo(&jogo);
+
+    // aguarda o jogador pressionar ENTER antes de voltar ao menu.
+    printf("\nPressione ENTER para voltar ao menu...\n");
+    getchar();
+}
+
 int main(int argc, char *argv[]) {
 
     srand((unsigned)time(NULL)); // inicializa o gerador de números aleatórios

@@ -126,3 +126,20 @@ void esvaziaFila(FilaEnc *f){
     f->frente = NULL;
     f->final = NULL;
 }
+
+int segundoFila(const FilaEnc *f, Cliente *cliente) {
+
+    // Verifica se os parametros recebidos sao validos.
+    if (f == NULL || cliente == NULL)
+        return -1;
+
+    // Para existir um segundo cliente, a frente precisa
+    // apontar para um nodo seguinte.
+    if (f->frente == NULL || f->frente->prox == NULL)
+        return 0;
+
+    // Copia os dados do segundo cliente para a variavel recebida.
+    *cliente = f->frente->prox->cliente;
+
+    return 1;
+}
