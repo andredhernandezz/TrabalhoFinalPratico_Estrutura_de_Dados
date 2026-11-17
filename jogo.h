@@ -11,6 +11,8 @@
 
 #define MAX_CLIENTES 10
 #define MAX_PACIENCIA 20
+#define RECOMPENSA_CLIENTE 100
+#define BONUS_PACIENCIA 15
 
 typedef enum{
     JOGO_ANDAMENTO, // partida em andamento
@@ -47,6 +49,7 @@ typedef struct{
     int pacienciaMax; // paciencia maxima de cada cliente
     int atendidos; // quantidade de clientes atendidos
     int totalClientes; // quantidade total de clientes da partida
+    int pontuacao; // pontuacao acumulada durante a partida
 
     StatusJogo status; // estado atual da partida
 

@@ -161,6 +161,7 @@ int iniciaJogo(Jogo *j, NodoAvl *raiz, int numClientes, int pacienciaMax) {
     j->pacienciaMax = pacienciaMax;
     j->atendidos = 0;
     j->totalClientes = numClientes;
+    j->pontuacao = 0; 
     j->status = JOGO_ANDAMENTO;
 
     inicializaEstoque(&j->estoque);
@@ -331,6 +332,9 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
             
             j->atendidos++; // atualiza a quantidade de clientes atendidos
             j->turno++; // consome um turno
+
+            // calcula a recompensa usando a paciência restante do cliente
+            j->pontuacao += RECOMPENSA_CLIENTE + BONUS_PACIENCIA * j->paciencia;
 
             if (j->atendidos == j->totalClientes){ // se todos os clientes foram atendidos
                 j->status = JOGO_VITORIA;

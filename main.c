@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
+#include <limits.h>
 
 #include "timer.h"
 #include "avl_tad.h"
@@ -13,12 +15,106 @@
 #include "lista_contig_tad.h"
 #include "fila_tad.h"
 #include "ordenacao.h"
+#include "jogo.h"
 
 /* PRA QUANDO EXISTIR A LOGICA DO JOGO:
 int buscarPedido(NodoAvl *raiz, TabelaHash *cache, int cod, Pedido *out, MetricasBusca *mb);
 int salvarPartida(const char *arq, ListaContig *lista, const char *nome, int pontuacao);
 int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempo);
 */
+
+// le um numero inteiro, evitando erros
+static int leInteiro(const char *mensagem, int *valor){
+
+}
+
+// le o nome do jogador
+// retorna 1 em caso de sucesso e 0 em caso contrário
+static int leNomeJogador(char *nome, int tamanho){
+    printf("Digite seu nome: ");
+
+    if(fgets(nome, (int)tamanho, stdin) == NULL) // le o nome respeitando a capacidade do vetor
+        return 0;
+    
+    nome[strcspn(nome, "\r\n")] = '/0'; // remove a quebra de linha do fgets
+
+    if (nome[0] == '/0') // impede iniciar a partida sem informar um nome
+        return 0;
+    
+    return 1;
+}
+
+// le um unico simbolo de ingrediente
+// retorna 1 em caso de sucesso, 0 se der erro de leitura, -1 se for entrada inválida
+static int leSimbolo(char *simbolo){
+    char linha[64]; 
+    char extra;
+
+    printf("Digite o simbolo: ");
+
+    if (fgets(linha, sizeof(linha), stdin) == NULL) // le o simbolo e verifica o retorno
+        return 0;
+
+    if (sscanf(linha, " %c %c", simbolo, &extra) != 1) // verifica se existe outro caracter
+        return -1;
+
+    return 1;
+}
+
+// exibe quantidade disponivel de cada ingrediente
+static void exibeEstoque(const Estoque *estoque){
+    printf("--=--=--=--ESTOQUE--=--=--\n");
+    printf("Carne (n):          %d\n", consultaEstoque(estoque, CARNE));
+    printf("Ovo frito (o):      %d\n", consultaEstoque(estoque, OVO));
+    printf("Bacon (b):          %d\n", consultaEstoque(estoque, BACON));
+    printf("Queijo suico (s):   %d\n", consultaEstoque(estoque, QUEIJO_SUICO));
+    printf("Queijo cheddar (q): %d\n", consultaEstoque(estoque, QUEIJO_CHEDDAR));
+    printf("Cebola (c):         %d\n", consultaEstoque(estoque, CEBOLA));
+    printf("Tomate (t):         %d\n", consultaEstoque(estoque, TOMATE));
+    printf("--=--=--=--=--=--=--=--=--\n\n");
+}
+
+// imprime os ingredientes do pedido
+static void exibePedido(const Jogo *j){
+    Cliente atual;
+
+    // obtem os dados do primeiro cliente da fila
+    if (frenteFila(&j->clientes, &atual) != 1) { // verifica possivel erro na funcao
+        printf("Nao foi possivel consultar o pedido atual.\n");
+        return;
+    }
+    
+    printf("\n--=--=--=-- PEDIDO ATUAL --=--=--=--\n");
+    printf("Cliente: %s\n", atual.nome);
+    printf("Codigo do pedido: %d\n", atual.pedido.cod);
+
+    // exibe os ingredientes da receita do pedido
+    printf("Ingredientes do pedido: ");
+    imprimeLista(&j->receita);
+
+    printf("--=--=--=--=--=--=--=--=--=--=--=--\n\n");
+}
+
+// exibe informacoes do jogo
+static void exibeEstado(const Jogo *j){
+    printf("\n--=--=--=-- DADO BURGER --=--=--=--\n");
+
+    printf("Turno: %d\n", j->turno);
+
+    printf("Clientes atendidos: %d/%d\n",
+           j->atendidos, j->totalClientes);
+
+    printf("Paciencia restante: %d/%d\n",
+           j->paciencia, j->pacienciaMax);
+
+    printf("Pontuacao: %d\n", j->pontuacao);
+
+    // imprime os ingredientes que ja foram adicionados ao prato
+    printf("\nHamburguer em montagem: ");
+    imprimePilha(&j->prato);
+
+    printf("--=--=--=--=--=--=--=--=--=--=--=--=--=\n");
+}
 
 int main(int argc, char *argv[]) {
 
