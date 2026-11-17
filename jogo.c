@@ -280,9 +280,6 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
 
     if (resultado == 1 && topo == 'z') // procura pao no topo. Se sim, prato fechado
         return ACAO_PRATO_FECHADO;
-
-    if (!simboloValido(simbolo))
-        return ACAO_SIMBOLO_INVALIDO;
     
     // verifica se o ingrediente precisa ser retirado do estoque
     precisaEstoque = identificaIngrediente(simbolo, &ing); // transforma simbolo em ingrediente
@@ -397,4 +394,6 @@ ResultadoAcao jogoAbandona(Jogo *j){
 
     // registra que a partida foi abandonada
     j->status = JOGO_ABANDONO;
+
+    return ACAO_SUCESSO;
 }
