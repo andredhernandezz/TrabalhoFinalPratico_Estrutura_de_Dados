@@ -185,6 +185,133 @@ static void exibeResultado(ResultadoAcao resultado){
     }
 } 
 
+// exibe as instrucoes e regras do Dado Burger
+static void exibeInstrucoes(void) {
+    printf("\n========== COMO JOGAR ==========\n\n");
+
+    printf("OBJETIVO DO JOGO:\n");
+    printf("Voce e o mais novo funcionario do Dado Burger e devera atender\n");
+    printf("aos pedidos de uma serie de clientes ao longo do dia.\n\n");
+
+    printf("INGREDIENTE\t\tSIMBOLO\tREQUER PREPARO?\tPERECIVEL?\n");
+    printf("Pao (de cima)\t\tz\tNao\t\tNao\n");
+    printf("Ketchup\t\t\tk\tNao\t\tNao\n");
+    printf("Mostarda\t\tm\tNao\t\tNao\n");
+    printf("Picles\t\t\tp\tNao\t\tNao\n");
+    printf("Alface\t\t\ta\tNao\t\tNao\n");
+    printf("Queijo suico\t\ts\tSim\t\tNao\n");
+    printf("Queijo cheddar\t\tq\tSim\t\tNao\n");
+    printf("Cebola\t\t\tc\tSim\t\tNao\n");
+    printf("Tomate\t\t\tt\tSim\t\tNao\n");
+    printf("Carne\t\t\tn\tSim\t\tSim\n");
+    printf("Ovo frito\t\to\tSim\t\tSim\n");
+    printf("Bacon\t\t\tb\tSim\t\tSim\n\n");
+
+    printf("ACOES DISPONIVEIS:\n");
+    printf("Preparar um ingrediente: consome um turno.\n");
+    printf("Adicionar um ingrediente ao hamburguer: consome um turno.\n");
+    printf("Remover o ingrediente do topo do hamburguer: consome um turno.\n");
+    printf("Acoes de consulta (ver estoque, ver pedido, etc.): nao consomem turno.\n\n");
+
+    printf("CONDICOES DE VITORIA E DERROTA:\n");
+    printf("Vitoria: atender todos os 10 clientes antes que percam a paciencia.\n");
+    printf("Derrota: deixar a paciencia de um cliente chegar a zero.\n");
+    printf("Abandono: escolher a opcao 0 durante a partida.\n\n");
+
+    printf("PONTUACAO:\n");
+    printf("Cada cliente atendido rende %d pontos.\n", RECOMPENSA_CLIENTE);
+    printf("Voce tambem recebe %d pontos por unidade de paciencia restante.\n",
+           BONUS_PACIENCIA);
+    printf("Quanto mais rapido atender os clientes, maior sera sua pontuacao!\n\n");
+
+    printf("INGREDIENTES PERECIVEIS:\n");
+    printf("Carne, ovo e bacon possuem prazo de validade apos o preparo.\n");
+    printf("Ingredientes vencidos sao descartados automaticamente do estoque.\n");
+    printf("Planeje seus preparos para evitar desperdicios!\n\n");
+}
+
+// permite consultar o historico de partidas e escolher a ordenacao
+static void exibeHistorico(ListaContig *hist) {
+    int ordem = 0;
+    int leitura;
+    int porPontuacao = 0;
+    double tOrd = 0.0;
+
+    const char *nomeAlgoritmo = "Quicksort (alfabetico)";
+
+    // pergunta como o jogador deseja ordenar o historico
+    printf("Ordenar por: 1 = ordem alfabetica, 2 = pontuacao decrescente: ");
+
+    leitura = leInteiro(&ordem);
+
+    // verifica se a opcao informada e valida
+    if (leitura != 1 || (ordem != 1 && ordem != 2)) {
+        if (leitura != -1)
+            printf("\nOPCAO INVALIDA\n");
+
+        return;
+    }
+
+    // configura a ordenacao por pontuacao, caso seja escolhida
+    if (ordem == 2) {
+        porPontuacao = 1;
+        nomeAlgoritmo = "Quicksort (pontuacao)";
+    }
+
+    // cria uma copia do historico para testar o mergesort
+    // sem alterar os dados da lista original
+    ListaContig base = *hist;
+    base.dados = NULL;
+
+    if (hist->tamanho > 0) {
+        base.dados = (NovoHistorico *) malloc(
+            hist->tamanho * sizeof(NovoHistorico)
+        );
+
+        if (base.dados != NULL) {
+            memcpy(
+                base.dados,
+                hist->dados,
+                hist->tamanho * sizeof(NovoHistorico)
+            );
+        }
+    }
+
+    // exibe o historico ordenado pelo quicksort
+    int tam = mostrarHistorico(hist, porPontuacao, &tOrd);
+
+    if (tam < 0) {
+        printf("Erro ao ordenar o historico.\n");
+    }
+    else {
+        // registra as metricas da ordenacao
+        if (!metricasLogOrdenacao("medicoes.log", nomeAlgoritmo, tam, tOrd)) {
+            printf("Aviso: nao foi possivel salvar as metricas da ordenacao.\n");
+        }
+
+        // compara o desempenho com o mergesort usando a copia
+        if (base.dados != NULL) {
+            if (porPontuacao) {
+                testarOrdenacao(
+                    "Mergesort (pontuacao)",
+                    mergesortPontuacao,
+                    &base
+                );
+            }
+            else {
+                testarOrdenacao(
+                    "Mergesort (alfabetico)",
+                    mergesortAlfabetico,
+                    &base
+                );
+            }
+        }
+    }
+
+    // libera a memoria utilizada pela copia do historico
+    free(base.dados);
+}
+
 static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquivoHistorico, const MetricasCarga *carga){
     Jogo jogo;
     char nome[50];
@@ -347,63 +474,106 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
     getchar();
 }
 
-int main(int argc, char *argv[]) {
+// inicializa as estruturas e carrega os dados necessarios para o programa
+// retorna 1 se tudo deu certo e 0 se ocorreu algum erro
+static int inicializaPrograma(const char *arquivoPedidos, const char *arquivoHistorico,
+                             NodoAvl **raiz, ListaContig *hist, MetricasCarga *carga) {
 
-    srand((unsigned)time(NULL)); // inicializa o gerador de números aleatórios
-    
-    NodoAvl *raiz = NULL;
+    // inicializa o gerador de numeros aleatorios
+    srand((unsigned)time(NULL));
 
-    if (argc < 3){
-        printf("Argumentos passados incorretamente \nCorreto: %s <pedidos> <historico>\n", argv[0]);
-        return 1;
-    }
+    // comeca com a arvore vazia
+    *raiz = NULL;
 
-    avlZerarMetricas(); // ZERA AS METRICAS DA AVL 
+    // inicializa a lista do historico
+    inicializaListaContig(hist);
 
+    // zera as metricas da AVL antes do carregamento
+    avlZerarMetricas();
+
+    // mede o tempo necessario para carregar os pedidos
     Timer t;
     timer_iniciar(&t);
-    int lidos = carregarPedidos(argv[1], &raiz);
-    double s = timer_parar(&t);
 
+    int lidos = carregarPedidos(arquivoPedidos, raiz);
 
-    int alturaAvl = avlAltura(raiz);
-    Contador metricasAVL;
-    metricasAVL = avlObterMetricas();
+    double tempo = timer_parar(&t);
 
     // verifica se ocorreu algum erro durante o carregamento
     if (lidos < 0) {
-
         if (lidos == -1)
-            printf("Erro ao abrir arquivo de pedidos: %s\n", argv[1]);
+            printf("Erro ao abrir arquivo de pedidos: %s\n", arquivoPedidos);
         else
             printf("Erro: arquivo de pedidos invalido ou leitura interrompida.\n");
 
-        // libera os pedidos podem ter sido carregados
-        raiz = avlDestruir(raiz);
+        return 0;
+    }
+
+    // obtem as metricas da arvore AVL
+    int alturaAvl = avlAltura(*raiz);
+    Contador metricasAVL = avlObterMetricas();
+
+    printf("Pedidos carregados: %d | Tempo: %.6f s\n", lidos, tempo);
+    printf("Altura da arvore: %d\n", alturaAvl);
+
+    // carrega os resultados de partidas anteriores
+    int nHist = carregarHistorico(arquivoHistorico, hist);
+
+    if (nHist == 0)
+        printf("Historico vazio ou nao encontrado.\n");
+
+    // armazena as metricas de carregamento
+    *carga = (MetricasCarga) {
+        metricasAVL.nosInserido,
+        alturaAvl,
+        metricasAVL.rotacoes,
+        tempo,
+        nHist
+    };
+
+    // registra as metricas no arquivo de log
+    if (!metricasLogCarga("medicoes.log", carga))
+        printf("Aviso: nao foi possivel gravar medicoes.log\n");
+
+    return 1;
+}
+
+// exibe as opcoes disponiveis no menu principal
+static void exibeMenuPrincipal(void) {
+    printf("---- ESCOLHA UMA OPCAO ----\n\n");
+    printf(" NOVO JOGO --> 1\n");
+    printf(" COMO JOGAR --> 2\n");
+    printf(" HISTORICO --> 3\n");
+    printf(" SAIR --> 0\n");
+}
+
+int main(int argc, char *argv[]) {
+    // verifica se os arquivos foram informados
+    if (argc < 3) {
+        printf("Argumentos passados incorretamente.\n");
+        printf("Correto: %s <pedidos> <historico>\n", argv[0]);
+        return 1;
+    }
+
+    NodoAvl *raiz = NULL;
+    ListaContig hist;
+    MetricasCarga carga;
+
+    // carrega os dados e inicializa as estruturas
+    if (!inicializaPrograma(argv[1], argv[2], &raiz, &hist, &carga)) {
+
+        // libera as estruturas em caso de erro
+        avlDestruir(raiz);
+        destroiListaContig(&hist);
 
         return 1;
     }
 
-    printf("Pedidos carregados: %d | Tempo: %.6f s\n", lidos, s);
-    printf("Altura da arvore: %d\n", alturaAvl);
-
-    ListaContig hist;
-    inicializaListaContig(&hist);
-    int nHist = carregarHistorico(argv[2], &hist);
-    if (nHist == 0)
-        printf("Historico vazio ou nao encontrado.\n");
-
-    MetricasCarga carga = { metricasAVL.nosInserido, alturaAvl, metricasAVL.rotacoes, s, nHist };
-    if (!metricasLogCarga("medicoes.log", &carga))
-        printf("Aviso: nao foi possivel gravar medicoes.log\n");
-
     int opcao = -1;
+
     do {
-        printf("---- ESCOLHA UMA OPCAO ----\n\n");
-        printf(" NOVO JOGO --> 1\n");
-        printf(" COMO JOGAR --> 2\n");
-        printf(" HISTORICO --> 3\n");
-        printf(" SAIR --> 0\n");
+        // mostra as opcoes do menu principal
+        exibeMenuPrincipal();
         printf("-> ");
 
         int resultado = leInteiro(&opcao);
@@ -422,78 +592,17 @@ int main(int argc, char *argv[]) {
 
         switch (opcao){
             case 1:
-                // inicia uma nova partida com os pedidos ja carregados.
+                // inicia uma nova partida com os pedidos ja carregados
                 // o historico e as metricas sao passados para registrar os resultados no fim da partida
                 executaNovoJogo(raiz, &hist, argv[2], &carga);
                 break;
             case 2:
-                printf("OBJETIVO DO JOGO: Voce e o mais novo funcionario do jogo Dado Burguer e devera atender aos pedidos de uma serie de clientes ao longo do dia \n\n");
-                printf("INGREDIENTE\t\tSIMBOLO\tREQUER PREPARO?\tPERECIVEL?\n");
-                printf("Pao (de cima)\t\tz\tNao\t\tNao\n");
-                printf("Ketchup\t\t\tk\tNao\t\tNao\n");
-                printf("Mostarda\t\tm\tNao\t\tNao\n");
-                printf("Picles\t\t\tp\tNao\t\tNao\n");
-                printf("Alface\t\t\ta\tNao\t\tNao\n");
-                printf("Queijo suico\t\ts\tSim\t\tNao\n");
-                printf("Queijo cheddar\t\tq\tSim\t\tNao\n");
-                printf("Cebola\t\t\tc\tSim\t\tNao\n");
-                printf("Tomate\t\t\tt\tSim\t\tNao\n");
-                printf("Carne\t\t\tn\tSim\t\tSim\n");
-                printf("Ovo frito\t\to\tSim\t\tSim\n");
-                printf("Bacon\t\t\tb\tSim\t\tSim\n\n");
-                printf("ACOES DISPONIVEIS:\nPreparar um ingrediente: consome um turno\nAdicionar um ingrediente ao hamburguer: consome um turno\nRemover o ingrediente do topo do hamburguer: consome um turno\nAcoes de consulta(ver estoque, ver pedido, etc.): nao consomem turno \n\n");
-                printf("CONDICOES DE VITORIA E DERROTA ... \n\n");
+                // exibe o "tutorial" do jogo
+                exibeInstrucoes();
                 break;
             case 3:
-                {
-                    int ordem = 0;
-                    printf("Ordenar por: 1 = ordem alfabetica, 2 = pontuacao decrescente: ");
-                    int leituraOrdem = leInteiro(&ordem);
-                    // se a entrada terminou, encerra o submenu
-                    if (leituraOrdem == -1)
-                        break;
-                    // verifica se a opcao digitada e valida
-                    if (leituraOrdem == 0 || (ordem != 1 && ordem != 2)) {
-                        printf("\nOPCAO INVALIDA\n");
-                        break;
-                    }
-                    int porPontuacao = 0;
-                    const char *nomeAlgoritmo = "Quicksort (alfabetico)";
-                    if (ordem == 2) {
-                        porPontuacao = 1;
-                        nomeAlgoritmo = "Quicksort (pontuacao)";
-                    }
-
-                    // NOVO: guarda uma copia da lista antes do quicksort mexer nela
-                    ListaContig base = hist;
-                    base.dados = NULL;
-                    if (hist.tamanho > 0) {
-                        base.dados = (NovoHistorico *) malloc(hist.tamanho * sizeof(NovoHistorico));
-                        if (base.dados != NULL)
-                            memcpy(base.dados, hist.dados, hist.tamanho * sizeof(NovoHistorico));
-                    }
-
-                    double tOrd = 0.0;
-                    int tam = mostrarHistorico(&hist, porPontuacao, &tOrd);
-                    if (tam < 0)
-                        printf("Erro ao ordenar o historico.\n");
-                    else {
-                        // tenta registrar as metricas da ordenacao
-                        if (!metricasLogOrdenacao("medicoes.log", nomeAlgoritmo, tam, tOrd)) {
-                        // informa caso a gravacao tenha falhado
-                        printf("Nao foi possivel salvar as metricas da ordenacao.\n");
-                        }
-
-                        if (base.dados != NULL) {
-                            if (porPontuacao) {
-                                testarOrdenacao("Mergesort (pontuacao)", mergesortPontuacao, &base);
-                            } else {
-                                testarOrdenacao("Mergesort (alfabetico)", mergesortAlfabetico, &base);
-                            }
-                        }
-                    }
-                    free(base.dados); // NOVO
-                }
+                // permite consultar e ordenar o historico de partidas
+                exibeHistorico(&hist);
                 break;
             case 0:
                 printf("\nSAINDO DO JOGO ... \n");

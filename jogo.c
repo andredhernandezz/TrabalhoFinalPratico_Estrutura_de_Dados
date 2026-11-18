@@ -341,23 +341,26 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
                     return ACAO_ERRO_INTERNO;
                 }
 
+                // Registra o atendimento do ultimo cliente.
                 j->atendidos++;
+
+                // Avanca o turno, pois adicionar o pao superior consome uma acao.
                 j->turno++;
 
-                // Atualiza a pontuacao pelo cliente atendido.
+                // Descarta os ingredientes que venceram no novo turno.
+                // Isso mantem o estoque atualizado mesmo no encerramento da partida.
+                verificaVencimentos(&j->estoque, j->turno);
+
+                // Calcula a pontuacao usando a paciencia restante do cliente.
                 j->pontuacao += RECOMPENSA_CLIENTE + BONUS_PACIENCIA * j->paciencia;
 
-                // Todos os clientes foram atendidos.
+                // Como todos os clientes foram atendidos, encerra com vitoria.
                 j->status = JOGO_VITORIA;
-
-                return ACAO_SUCESSO;
             }
 
-            /*
-             * Ainda existem clientes depois do atual.
-             * Primeiro prepara a receita do proximo cliente
-             * em uma lista temporaria.
-             */
+            /* ainda existem clientes depois do atual.
+            primeiro prepara a receita do proximo cliente em uma lista temporaria.
+            */
             Cliente proximo;
             ListaEnc proximaReceita;
 
