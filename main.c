@@ -131,10 +131,28 @@ static void exibePedido(const Jogo *j){
     printf("--=--=--=--=--=--=--=--=--=--=--=--\n\n");
 }
 
-// exibe apenas a sequencia de ingredientes do pedido atual
-static void exibeSequenciaPedido(const Jogo *j) {
-    printf("\nPedido atual: ");
+// mostra o pedido, a montagem atual e o proximo ingrediente esperado
+static void exibeProgressoMontagem(const Jogo *j) {
+    const NodoLista *ingrediente = j->receita.ini;
+    int adicionados = tamanhoPilha(&j->prato);
+    int i;
+
+    printf("\n------ PROGRESSO DA MONTAGEM ------\n");
+
+    // mostra a sequencia completa do pedido
+    printf("Pedido:   ");
     imprimeLista(&j->receita);
+
+    // mostra os ingredientes que ja estao no hamburguer
+    printf("Montagem: ");
+    imprimePilha(&j->prato);
+
+    // avanca na receita a quantidade de ingredientes ja adicionados
+    for (i = 0; i < adicionados && ingrediente != NULL; i++) {
+        ingrediente = ingrediente->prox;
+    }
+
+    printf("-----------------------------------\n");
 }
 
 // exibe informacoes do jogo
@@ -150,10 +168,6 @@ static void exibeEstado(const Jogo *j){
            j->paciencia, j->pacienciaMax);
 
     printf("Pontuacao: %d\n", j->pontuacao);
-
-    // imprime os ingredientes que ja foram adicionados ao prato
-    printf("\nHamburguer em montagem: ");
-    imprimePilha(&j->prato);
 
     printf("--=--=--=--=--=--=--=--=--=--=--=--=--=\n");
 }
@@ -358,9 +372,9 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
         // mostra o estado atual da partida
         exibeEstado(&jogo);
 
-        // mostra a sequencia do pedido depois da primeira consulta
+        // mostra o progresso da montagem depois da primeira consulta ao pedido
         if (pedidoConsultado == 1)
-            exibeSequenciaPedido(&jogo);
+            exibeProgressoMontagem(&jogo);
 
         // mostra os ingredientes e seus simbolos
         exibeTabelaIngredientes();
