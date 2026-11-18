@@ -205,27 +205,90 @@ static void exibeResultado(ResultadoAcao resultado){
     }
 } 
 
-// exibe os ingredientes disponiveis e suas caracteristicas
-static void exibeTabelaIngredientes(void) {
-    printf("\n==================== INGREDIENTES ====================\n");
-    printf("%-18s %-8s %-10s %-10s\n",
-           "INGREDIENTE", "SIMBOLO", "PREPARO", "PERECIVEL");
-    printf("------------------------------------------------------\n");
+// exibe os ingredientes e, durante a partida, suas quantidades em estoque
+static void exibeTabelaIngredientes(const Estoque *estoque) {
+    printf("\n========================= INGREDIENTES =========================\n");
 
-    printf("%-18s %-8c %-10s %-10s\n", "Pao (de cima)", 'z', "Nao", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Ketchup", 'k', "Nao", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Mostarda", 'm', "Nao", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Picles", 'p', "Nao", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Alface", 'a', "Nao", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Queijo suico", 's', "Sim", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Queijo cheddar", 'q', "Sim", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Cebola", 'c', "Sim", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Tomate", 't', "Sim", "Nao");
-    printf("%-18s %-8c %-10s %-10s\n", "Carne", 'n', "Sim", "Sim");
-    printf("%-18s %-8c %-10s %-10s\n", "Ovo frito", 'o', "Sim", "Sim");
-    printf("%-18s %-8c %-10s %-10s\n", "Bacon", 'b', "Sim", "Sim");
+    // mostra o cabecalho com ou sem a coluna de estoque
+    if (estoque != NULL) {
+        printf("%-18s %-8s %-10s %-10s %s\n",
+               "INGREDIENTE", "SIMBOLO", "PREPARO", "PERECIVEL", "ESTOQUE");
+    }
+    else {
+        printf("%-18s %-8s %-10s %s\n",
+               "INGREDIENTE", "SIMBOLO", "PREPARO", "PERECIVEL");
+    }
 
-    printf("======================================================\n");
+    printf("----------------------------------------------------------------\n");
+
+    // ingredientes que nao precisam de preparo possuem disponibilidade ilimitada
+    printf("%-18s %-8c %-10s %-10s",
+           "Pao (de cima)", 'z', "Nao", "Nao");
+    if (estoque != NULL) printf(" -\n");
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Ketchup", 'k', "Nao", "Nao");
+    if (estoque != NULL) printf(" -\n");
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Mostarda", 'm', "Nao", "Nao");
+    if (estoque != NULL) printf(" -\n");
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Picles", 'p', "Nao", "Nao");
+    if (estoque != NULL) printf(" -\n");
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Alface", 'a', "Nao", "Nao");
+    if (estoque != NULL) printf(" -\n");
+    else printf("\n");
+
+    // ingredientes preparados: consulta a quantidade disponivel
+    printf("%-18s %-8c %-10s %-10s",
+           "Queijo suico", 's', "Sim", "Nao");
+    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, QUEIJO_SUICO));
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Queijo cheddar", 'q', "Sim", "Nao");
+    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, QUEIJO_CHEDDAR));
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Cebola", 'c', "Sim", "Nao");
+    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, CEBOLA));
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Tomate", 't', "Sim", "Nao");
+    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, TOMATE));
+    else printf("\n");
+
+    // ingredientes pereciveis: mostra as unidades ainda disponiveis
+    printf("%-18s %-8c %-10s %-10s",
+           "Carne", 'n', "Sim", "Sim");
+    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, CARNE));
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Ovo frito", 'o', "Sim", "Sim");
+    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, OVO));
+    else printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s",
+           "Bacon", 'b', "Sim", "Sim");
+    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, BACON));
+    else printf("\n");
+
+    printf("----------------------------------------------------------------\n");
+
+    // explica o significado do traco na coluna de estoque
+    if (estoque != NULL)
+        printf("(-) Ingrediente disponivel sem necessidade de preparo.\n");
 }
 
 // exibe as instrucoes e regras do Dado Burger
@@ -237,7 +300,7 @@ static void exibeInstrucoes(void) {
     printf("aos pedidos de uma serie de clientes ao longo do dia.\n\n");
 
     // mostra a tabela de ingredientes e seus simbolos
-    exibeTabelaIngredientes();
+    exibeTabelaIngredientes(NULL);
     printf("\n");
 
     printf("ACOES DISPONIVEIS:\n");
@@ -377,7 +440,7 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
             exibeProgressoMontagem(&jogo);
 
         // mostra os ingredientes e seus simbolos
-        exibeTabelaIngredientes();
+        exibeTabelaIngredientes(&jogo.estoque);
 
         // apresenta as acoes disponiveis
         printf("\n---------- MENU ----------\n");
@@ -585,11 +648,12 @@ static int inicializaPrograma(const char *arquivoPedidos, const char *arquivoHis
 
 // exibe as opcoes disponiveis no menu principal
 static void exibeMenuPrincipal(void) {
-    printf("---- ESCOLHA UMA OPCAO ----\n\n");
+    printf("\n---- ESCOLHA UMA OPCAO ----\n\n");
     printf(" NOVO JOGO --> 1\n");
     printf(" COMO JOGAR --> 2\n");
     printf(" HISTORICO --> 3\n");
     printf(" SAIR --> 0\n");
+    printf("----------------------------\n");
 }
 
 int main(int argc, char *argv[]) {
