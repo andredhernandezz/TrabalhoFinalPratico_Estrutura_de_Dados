@@ -2,7 +2,21 @@
 #include "hash_tad.h"
 
 int hashDivisao(int chave, int m) {
-    return ((chave % m) % m);
+    int indice;
+
+    // verifica se o tamanho da tabela é válido
+    // não podemos calcular o resto de uma divisão por zero
+    if (m <= 0)
+        return -1;
+
+    // calcula a posição da chave na tabela hash
+    indice = chave % m;
+
+    // se o resultado for negativo, ajusta para uma posição válida para que o índice sempre fique entre 0 e m - 1.
+    if (indice < 0)
+        indice += m;
+
+    return indice;
 }
 
 int hashInicializar(TabelaHash *t, int m){
@@ -20,11 +34,18 @@ int hashInicializar(TabelaHash *t, int m){
 
 
 }
+
 int hashBuscar(TabelaHash *t, int cod, Pedido *out) {
-    if (t == NULL || t->tab == NULL || out == NULL)
+    // verifica se a tabela e o ponteiro de saida sao validos
+    if (t == NULL || t->tab == NULL || t->m <= 0 || out == NULL)
         return 0;
-        
-    NoHash *p = t->tab[hashDivisao(cod, t->m)];
+
+    // calcula a posicao do pedido na tabela hash
+    int i = hashDivisao(cod, t->m);
+
+    // comeca a busca pela lista encadeada dessa posicao
+    NoHash *p = t->tab[i];
+
     while (p != NULL) {
         if (p->dado.cod == cod) {
             *out = p->dado;
@@ -38,7 +59,8 @@ int hashBuscar(TabelaHash *t, int cod, Pedido *out) {
 }
  
 int hashInserir(TabelaHash *t, Pedido ped) {
-    if (t == NULL || t->tab == NULL)
+    // verifica se a tabela foi inicializada corretamente
+    if (t == NULL || t->tab == NULL || t->m <= 0)
         return 0;
 
     int i = hashDivisao(ped.cod, t->m);

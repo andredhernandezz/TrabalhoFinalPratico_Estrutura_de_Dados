@@ -23,24 +23,60 @@ int salvarPartida(const char *arq, ListaContig *lista, const char *nome, int pon
 int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempo);
 */
 
-// le um numero inteiro, evitando erros
-static int leInteiro(const char *mensagem, int *valor){
+// le um numero inteiro, rejeitando entradas invalidas
+// retorna 1 se valido, 0 se invalido e -1 se chegar ao EOF
+int leInteiro(int *valor) {
+    char linha[100];
+    char extra;
 
+    // tenta ler uma linha da entrada
+    if (fgets(linha, sizeof(linha), stdin) == NULL)
+        return -1;
+
+    // verifica se a linha foi lida por completo
+    if (strchr(linha, '\n') == NULL) {
+
+        // se a linha for maior que o vetor, descarta o restante
+        if (!feof(stdin)) {
+            int c;
+
+            while ((c = getchar()) != '\n' && c != EOF) {}
+
+            // rejeita a linha longa
+            return 0;
+        }
+    }
+
+    // verifica se existe exatamente um numero inteiro na linha
+    if (sscanf(linha, "%d %c", valor, &extra) != 1)
+        return 0;
+
+    return 1;
 }
 
 // le o nome do jogador
-// retorna 1 em caso de sucesso e 0 em caso contrário
-static int leNomeJogador(char *nome, int tamanho){
+// retorna 1 em caso de sucesso e 0 em caso de erro
+static int leNomeJogador(char *nome, int tamanho) {
     printf("Digite seu nome: ");
 
-    if(fgets(nome, (int)tamanho, stdin) == NULL) // le o nome respeitando a capacidade do vetor
+    if (fgets(nome, tamanho, stdin) == NULL) // le o nome respeitando o tamanho do vetor
         return 0;
-    
-    nome[strcspn(nome, "\r\n")] = '/0'; // remove a quebra de linha do fgets
 
-    if (nome[0] == '/0') // impede iniciar a partida sem informar um nome
+    if (strchr(nome, '\n') == NULL && !feof(stdin)) { // verifica se a linha foi lida completamente
+        int c;
+
+        // descarta os caracteres restantes
+        while ((c = getchar()) != '\n' && c != EOF) {}
+
+        printf("Nome muito longo.\n");
         return 0;
-    
+    }
+
+    nome[strcspn(nome, "\r\n")] = '\0'; // remove a quebra de linha
+
+    if (nome[0] == '\0')  // impede nomes vazios
+        return 0;
+
     return 1;
 }
 
@@ -158,7 +194,7 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
     ResultadoAcao resultado;
 
     // pede o nome do usuario para iniciar a partida
-    if (!leNome(nome, 50)) {
+    if (!leNomeJogador(nome, 50)) {
         printf("Nome invalido. Partida cancelada.\n");
         return;
     }
@@ -183,14 +219,16 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
         printf("0 - Abandonar partida\n");
         printf("--------------------------\n");
 
-        leitura = leInteiro(" ", &opcao); // entrada da acao escolhida
+        leitura = leInteiro(&opcao); // entrada da acao escolhida
 
-        // se ocorrer erro de leitura, encerra a partida
-        if (leitura == 0) {
+        // se a entrada terminou, abandona a partida e encerra o menu
+        if (leitura == -1) {
             jogoAbandona(&jogo);
             break;
         }
-        if (leitura != 1){
+
+        // se a entrada for invalida, permite tentar novamente
+        if (leitura == 0) {
             printf("\nOpcao invalida.\n");
             continue;
         }
@@ -201,7 +239,14 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
             case 2:
                 leitura = leSimbolo(&simbolo);
 
-                if (leitura != 1) {
+                // se a entrada terminou, encerra a partida
+                if (leitura == 0) {
+                    jogoAbandona(&jogo);
+                    break;
+                }
+
+                // se o simbolo for invalido, permite tentar novamente
+                if (leitura == -1) {
                     printf("Entrada de simbolo invalida.\n");
                     break;
                 }
@@ -282,13 +327,17 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
         jogo.cache.colisoes
     };
     
-    // salva as metricas coletadas durante a partida
-    metricasRelatorioPartida(
-        "medicoes.log",
-        carga,
-        &jogo.buscas,
-        &metricasHash
-    );
+    // tenta salvar as metricas coletadas durante a partida
+    if (!metricasRelatorioPartida(
+            "medicoes.log",
+            carga,
+            &jogo.buscas,
+            &metricasHash
+        )) {
+
+        // avisa caso nao seja possivel gravar o relatorio
+        printf("Nao foi possivel salvar as metricas da partida.\n");
+    }
 
     // libera a memoria utilizada pelas estruturas do jogo
     destroiJogo(&jogo);
@@ -321,10 +370,20 @@ int main(int argc, char *argv[]) {
     Contador metricasAVL;
     metricasAVL = avlObterMetricas();
 
-    if (lidos < 0){
-        printf("Erro ao abrir arquivo de pedidos: %s\n", argv[1]);
+    // verifica se ocorreu algum erro durante o carregamento
+    if (lidos < 0) {
+
+        if (lidos == -1)
+            printf("Erro ao abrir arquivo de pedidos: %s\n", argv[1]);
+        else
+            printf("Erro: arquivo de pedidos invalido ou leitura interrompida.\n");
+
+        // libera os pedidos podem ter sido carregados
+        raiz = avlDestruir(raiz);
+
         return 1;
     }
+
     printf("Pedidos carregados: %d | Tempo: %.6f s\n", lidos, s);
     printf("Altura da arvore: %d\n", alturaAvl);
 
@@ -345,13 +404,27 @@ int main(int argc, char *argv[]) {
         printf(" COMO JOGAR --> 2\n");
         printf(" HISTORICO --> 3\n");
         printf(" SAIR --> 0\n");
-        scanf("%d", &opcao);
-        printf("\n");
+        printf("-> ");
 
+        int resultado = leInteiro(&opcao);
+
+        // se a entrada terminou, encerra o menu
+        if (resultado == -1)
+            break;
+
+        // se o usuario digitou algo invalido, pede outra opcao
+        if (resultado == 0) {
+            printf("Opcao invalida!\n");
+            continue;
+        }
+        
+        printf("\n");
 
         switch (opcao){
             case 1:
-                printf("\nINICIANDO NOVO JOGO ...\n");
+                // inicia uma nova partida com os pedidos ja carregados.
+                // o historico e as metricas sao passados para registrar os resultados no fim da partida
+                executaNovoJogo(raiz, &hist, argv[2], &carga);
                 break;
             case 2:
                 printf("OBJETIVO DO JOGO: Voce e o mais novo funcionario do jogo Dado Burguer e devera atender aos pedidos de uma serie de clientes ao longo do dia \n\n");
@@ -375,10 +448,13 @@ int main(int argc, char *argv[]) {
                 {
                     int ordem = 0;
                     printf("Ordenar por: 1 = ordem alfabetica, 2 = pontuacao decrescente: ");
-                    if (scanf("%d", &ordem) != 1 || (ordem != 1 && ordem != 2)) {
-                        int c;
-                        while ((c = getchar()) != '\n' && c != EOF) {}
-                        printf("\n OPCAO INVALIDA \n");
+                    int leituraOrdem = leInteiro(&ordem);
+                    // se a entrada terminou, encerra o submenu
+                    if (leituraOrdem == -1)
+                        break;
+                    // verifica se a opcao digitada e valida
+                    if (leituraOrdem == 0 || (ordem != 1 && ordem != 2)) {
+                        printf("\nOPCAO INVALIDA\n");
                         break;
                     }
                     int porPontuacao = 0;
@@ -402,7 +478,11 @@ int main(int argc, char *argv[]) {
                     if (tam < 0)
                         printf("Erro ao ordenar o historico.\n");
                     else {
-                        metricasLogOrdenacao("medicoes.log", nomeAlgoritmo, tam, tOrd);
+                        // tenta registrar as metricas da ordenacao
+                        if (!metricasLogOrdenacao("medicoes.log", nomeAlgoritmo, tam, tOrd)) {
+                        // informa caso a gravacao tenha falhado
+                        printf("Nao foi possivel salvar as metricas da ordenacao.\n");
+                        }
 
                         if (base.dados != NULL) {
                             if (porPontuacao) {

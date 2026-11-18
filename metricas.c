@@ -44,20 +44,37 @@ static void escreveOrdenacao(FILE *out, const char *alg, int tamanho, double tem
 
 int metricasLogCarga(const char *arqLog, const MetricasCarga *c) {
     FILE *f = fopen(arqLog, "w");
-    if (!f)
+
+    // verifica se o arquivo foi aberto
+    if (f == NULL)
         return 0;
+
+    // escreve as metricas de carregamento
     escreveCarga(f, c);
-    fclose(f);
-    return 1;
+
+    // verifica se ocorreu algum erro durante a escrita
+    int erro = ferror(f);
+
+    // fclose tambem pode indicar erro ao finalizar a gravacao
+    if (fclose(f) != 0)
+        erro = 1;
+
+    // retorna 1 se tudo funcionou, ou 0 se houve erro
+    return !erro;
 }
 
 int metricasRelatorioPartida(const char *arqLog, const MetricasCarga *c,
                              const MetricasBusca *b, const MetricasHash *h) {
     FILE *f = fopen(arqLog, "a");
-    for (int i = 0; i < 2; i++) { // i=0: tela, i=1: arquivo
+
+    // imprime o relatorio na tela e, se possivel, no arquivo
+    for (int i = 0; i < 2; i++) {
         FILE *out = (i == 0) ? stdout : f;
-        if (!out)
+
+        // se nao conseguiu abrir o arquivo, ainda exibe na tela
+        if (out == NULL)
             continue;
+
         fprintf(out, "\n=== RELATORIO DE DESEMPENHO ===\n\n");
         escreveCarga(out, c);
         fprintf(out, "\n");
@@ -66,19 +83,42 @@ int metricasRelatorioPartida(const char *arqLog, const MetricasCarga *c,
         escreveHash(out, h);
         fprintf(out, "\n================================\n");
     }
-    if (f)
-        fclose(f);
-    return f != NULL;
+
+    // nao conseguiu abrir o arquivo para gravacao
+    if (f == NULL)
+        return 0;
+
+    // verifica se houve erro ao escrever no arquivo
+    int erro = ferror(f);
+
+    // verifica tambem se o fechamento foi bem-sucedido
+    if (fclose(f) != 0)
+        erro = 1;
+
+    return !erro;
 }
 
 int metricasLogOrdenacao(const char *arqLog, const char *algoritmo,
                          int tamanho, double tempo) {
     FILE *f = fopen(arqLog, "a");
+
+    // exibe as metricas da ordenacao na tela
     escreveOrdenacao(stdout, algoritmo, tamanho, tempo);
-    if (!f)
+
+    // verifica se o arquivo foi aberto
+    if (f == NULL)
         return 0;
+
+    // registra as metricas no arquivo
     fprintf(f, "\n");
     escreveOrdenacao(f, algoritmo, tamanho, tempo);
-    fclose(f);
-    return 1;
+
+    // verifica se ocorreu algum erro durante a escrita
+    int erro = ferror(f);
+
+    // verifica se o arquivo foi fechado corretamente
+    if (fclose(f) != 0)
+        erro = 1;
+
+    return !erro;
 }
