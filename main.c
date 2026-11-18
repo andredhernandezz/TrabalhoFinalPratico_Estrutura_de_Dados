@@ -131,6 +131,12 @@ static void exibePedido(const Jogo *j){
     printf("--=--=--=--=--=--=--=--=--=--=--=--\n\n");
 }
 
+// exibe apenas a sequencia de ingredientes do pedido atual
+static void exibeSequenciaPedido(const Jogo *j) {
+    printf("\nPedido atual: ");
+    imprimeLista(&j->receita);
+}
+
 // exibe informacoes do jogo
 static void exibeEstado(const Jogo *j){
     printf("\n--=--=--=-- DADO BURGER --=--=--=--\n");
@@ -156,7 +162,7 @@ static void exibeEstado(const Jogo *j){
 static void exibeResultado(ResultadoAcao resultado){
     switch(resultado){
         case ACAO_SUCESSO:
-            printf("Acao concluida");
+            printf("Acao concluida\n");
             break;
         case ACAO_SIMBOLO_INVALIDO:
             printf("\nSimbolo invalido!\n");
@@ -185,6 +191,29 @@ static void exibeResultado(ResultadoAcao resultado){
     }
 } 
 
+// exibe os ingredientes disponiveis e suas caracteristicas
+static void exibeTabelaIngredientes(void) {
+    printf("\n==================== INGREDIENTES ====================\n");
+    printf("%-18s %-8s %-10s %-10s\n",
+           "INGREDIENTE", "SIMBOLO", "PREPARO", "PERECIVEL");
+    printf("------------------------------------------------------\n");
+
+    printf("%-18s %-8c %-10s %-10s\n", "Pao (de cima)", 'z', "Nao", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Ketchup", 'k', "Nao", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Mostarda", 'm', "Nao", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Picles", 'p', "Nao", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Alface", 'a', "Nao", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Queijo suico", 's', "Sim", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Queijo cheddar", 'q', "Sim", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Cebola", 'c', "Sim", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Tomate", 't', "Sim", "Nao");
+    printf("%-18s %-8c %-10s %-10s\n", "Carne", 'n', "Sim", "Sim");
+    printf("%-18s %-8c %-10s %-10s\n", "Ovo frito", 'o', "Sim", "Sim");
+    printf("%-18s %-8c %-10s %-10s\n", "Bacon", 'b', "Sim", "Sim");
+
+    printf("======================================================\n");
+}
+
 // exibe as instrucoes e regras do Dado Burger
 static void exibeInstrucoes(void) {
     printf("\n========== COMO JOGAR ==========\n\n");
@@ -193,19 +222,9 @@ static void exibeInstrucoes(void) {
     printf("Voce e o mais novo funcionario do Dado Burger e devera atender\n");
     printf("aos pedidos de uma serie de clientes ao longo do dia.\n\n");
 
-    printf("INGREDIENTE\t\tSIMBOLO\tREQUER PREPARO?\tPERECIVEL?\n");
-    printf("Pao (de cima)\t\tz\tNao\t\tNao\n");
-    printf("Ketchup\t\t\tk\tNao\t\tNao\n");
-    printf("Mostarda\t\tm\tNao\t\tNao\n");
-    printf("Picles\t\t\tp\tNao\t\tNao\n");
-    printf("Alface\t\t\ta\tNao\t\tNao\n");
-    printf("Queijo suico\t\ts\tSim\t\tNao\n");
-    printf("Queijo cheddar\t\tq\tSim\t\tNao\n");
-    printf("Cebola\t\t\tc\tSim\t\tNao\n");
-    printf("Tomate\t\t\tt\tSim\t\tNao\n");
-    printf("Carne\t\t\tn\tSim\t\tSim\n");
-    printf("Ovo frito\t\to\tSim\t\tSim\n");
-    printf("Bacon\t\t\tb\tSim\t\tSim\n\n");
+    // mostra a tabela de ingredientes e seus simbolos
+    exibeTabelaIngredientes();
+    printf("\n");
 
     printf("ACOES DISPONIVEIS:\n");
     printf("Preparar um ingrediente: consome um turno.\n");
@@ -318,6 +337,7 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
     int opcao;
     char simbolo;
     int leitura;
+    int pedidoConsultado = 0;
     ResultadoAcao resultado;
 
     // pede o nome do usuario para iniciar a partida
@@ -334,9 +354,18 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
 
     printf("Boa sorte, %s!\n", nome);
 
-    while (jogo.status == JOGO_ANDAMENTO){
-        exibeEstado(&jogo); // atualiza os dados da partida
+    while (jogo.status == JOGO_ANDAMENTO) {
+        // mostra o estado atual da partida
+        exibeEstado(&jogo);
 
+        // mostra a sequencia do pedido depois da primeira consulta
+        if (pedidoConsultado == 1)
+            exibeSequenciaPedido(&jogo);
+
+        // mostra os ingredientes e seus simbolos
+        exibeTabelaIngredientes();
+
+        // apresenta as acoes disponiveis
         printf("\n---------- MENU ----------\n");
         printf("1 - Preparar ingrediente\n");
         printf("2 - Adicionar ingrediente ao hamburguer\n");
@@ -401,6 +430,8 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
             case 5:
                 // consulta o pedido
                 exibePedido(&jogo);
+                // muda o estado da flag
+                pedidoConsultado = 1;
                 break;
             case 0:
                 // encerra a partida
@@ -416,7 +447,7 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
     }
 
     // fim do while = fim da partida
-    printf("--=--=--=--FIM DE JOGO--=--=--=--\n");
+    printf("\n--=--=--=--FIM DE JOGO--=--=--=--\n");
 
     switch(jogo.status){
         case JOGO_VITORIA:
@@ -426,7 +457,7 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
             printf("Voce perdeu! Cliente cansou de esperar...\n");
             break;
         case JOGO_ABANDONO:
-            printf("Saindo...\n");
+            printf("Partida abandonada.\n");
             break;
         default:
             break;
