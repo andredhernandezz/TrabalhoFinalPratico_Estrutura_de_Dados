@@ -97,19 +97,6 @@ static int leSimbolo(char *simbolo){
     return 1;
 }
 
-// exibe quantidade disponivel de cada ingrediente
-static void exibeEstoque(const Estoque *estoque){
-    printf("--=--=--=--ESTOQUE--=--=--\n");
-    printf("Carne (n):          %d\n", consultaEstoque(estoque, CARNE));
-    printf("Ovo frito (o):      %d\n", consultaEstoque(estoque, OVO));
-    printf("Bacon (b):          %d\n", consultaEstoque(estoque, BACON));
-    printf("Queijo suico (s):   %d\n", consultaEstoque(estoque, QUEIJO_SUICO));
-    printf("Queijo cheddar (q): %d\n", consultaEstoque(estoque, QUEIJO_CHEDDAR));
-    printf("Cebola (c):         %d\n", consultaEstoque(estoque, CEBOLA));
-    printf("Tomate (t):         %d\n", consultaEstoque(estoque, TOMATE));
-    printf("--=--=--=--=--=--=--=--=--\n\n");
-}
-
 // imprime os ingredientes do pedido
 static void exibePedido(const Jogo *j){
     Cliente atual;
@@ -205,90 +192,135 @@ static void exibeResultado(ResultadoAcao resultado){
     }
 } 
 
-// exibe os ingredientes e, durante a partida, suas quantidades em estoque
-static void exibeTabelaIngredientes(const Estoque *estoque) {
-    printf("\n========================= INGREDIENTES =========================\n");
+// exibe a tabela de ingredientes, incluindo estoque e validade durante a partida
+static void exibeTabelaIngredientes(const Estoque *estoque, int turnoAtual) {
+    int quantidade;
+    int validade;
 
-    // mostra o cabecalho com ou sem a coluna de estoque
+    printf("\n============================== INGREDIENTES ==============================\n");
+
+    // mostra o cabecalho de acordo com a tela em que a funcao foi chamada
     if (estoque != NULL) {
-        printf("%-18s %-8s %-10s %-10s %s\n",
-               "INGREDIENTE", "SIMBOLO", "PREPARO", "PERECIVEL", "ESTOQUE");
+        printf("%-18s %-8s %-10s %-10s %-8s %s\n",
+               "INGREDIENTE", "SIMBOLO", "PREPARO",
+               "PERECIVEL", "ESTOQUE", "VALIDADE");
     }
     else {
         printf("%-18s %-8s %-10s %s\n",
                "INGREDIENTE", "SIMBOLO", "PREPARO", "PERECIVEL");
     }
 
-    printf("----------------------------------------------------------------\n");
+    printf("--------------------------------------------------------------------------\n");
 
-    // ingredientes que nao precisam de preparo possuem disponibilidade ilimitada
-    printf("%-18s %-8c %-10s %-10s",
-           "Pao (de cima)", 'z', "Nao", "Nao");
-    if (estoque != NULL) printf(" -\n");
+    // ingredientes que nao precisam de preparo
+    // o traco indica que nao possuem estoque limitado nem validade
+    printf("%-18s %-8c %-10s %-10s", "Pao (de cima)", 'z', "Nao", "Nao");
+    if (estoque != NULL) printf(" %-8s -\n", "-");
     else printf("\n");
 
-    printf("%-18s %-8c %-10s %-10s",
-           "Ketchup", 'k', "Nao", "Nao");
-    if (estoque != NULL) printf(" -\n");
+    printf("%-18s %-8c %-10s %-10s", "Ketchup", 'k', "Nao", "Nao");
+    if (estoque != NULL) printf(" %-8s -\n", "-");
     else printf("\n");
 
-    printf("%-18s %-8c %-10s %-10s",
-           "Mostarda", 'm', "Nao", "Nao");
-    if (estoque != NULL) printf(" -\n");
+    printf("%-18s %-8c %-10s %-10s", "Mostarda", 'm', "Nao", "Nao");
+    if (estoque != NULL) printf(" %-8s -\n", "-");
     else printf("\n");
 
-    printf("%-18s %-8c %-10s %-10s",
-           "Picles", 'p', "Nao", "Nao");
-    if (estoque != NULL) printf(" -\n");
+    printf("%-18s %-8c %-10s %-10s", "Picles", 'p', "Nao", "Nao");
+    if (estoque != NULL) printf(" %-8s -\n", "-");
     else printf("\n");
 
-    printf("%-18s %-8c %-10s %-10s",
-           "Alface", 'a', "Nao", "Nao");
-    if (estoque != NULL) printf(" -\n");
+    printf("%-18s %-8c %-10s %-10s", "Alface", 'a', "Nao", "Nao");
+    if (estoque != NULL) printf(" %-8s -\n", "-");
     else printf("\n");
 
-    // ingredientes preparados: consulta a quantidade disponivel
-    printf("%-18s %-8c %-10s %-10s",
-           "Queijo suico", 's', "Sim", "Nao");
-    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, QUEIJO_SUICO));
-    else printf("\n");
-
-    printf("%-18s %-8c %-10s %-10s",
-           "Queijo cheddar", 'q', "Sim", "Nao");
-    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, QUEIJO_CHEDDAR));
-    else printf("\n");
-
-    printf("%-18s %-8c %-10s %-10s",
-           "Cebola", 'c', "Sim", "Nao");
-    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, CEBOLA));
-    else printf("\n");
-
-    printf("%-18s %-8c %-10s %-10s",
-           "Tomate", 't', "Sim", "Nao");
-    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, TOMATE));
-    else printf("\n");
-
-    // ingredientes pereciveis: mostra as unidades ainda disponiveis
-    printf("%-18s %-8c %-10s %-10s",
-           "Carne", 'n', "Sim", "Sim");
-    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, CARNE));
-    else printf("\n");
-
-    printf("%-18s %-8c %-10s %-10s",
-           "Ovo frito", 'o', "Sim", "Sim");
-    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, OVO));
-    else printf("\n");
-
-    printf("%-18s %-8c %-10s %-10s",
-           "Bacon", 'b', "Sim", "Sim");
-    if (estoque != NULL) printf(" %d\n", consultaEstoque(estoque, BACON));
-    else printf("\n");
-
-    printf("----------------------------------------------------------------\n");
-
-    // explica o significado do traco na coluna de estoque
+    // ingredientes preparados que nao possuem prazo de vencimento
+    printf("%-18s %-8c %-10s %-10s", "Queijo suico", 's', "Sim", "Nao");
     if (estoque != NULL)
-        printf("(-) Ingrediente disponivel sem necessidade de preparo.\n");
+        printf(" %-8d -\n", consultaEstoque(estoque, QUEIJO_SUICO));
+    else
+        printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s", "Queijo cheddar", 'q', "Sim", "Nao");
+    if (estoque != NULL)
+        printf(" %-8d -\n", consultaEstoque(estoque, QUEIJO_CHEDDAR));
+    else
+        printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s", "Cebola", 'c', "Sim", "Nao");
+    if (estoque != NULL)
+        printf(" %-8d -\n", consultaEstoque(estoque, CEBOLA));
+    else
+        printf("\n");
+
+    printf("%-18s %-8c %-10s %-10s", "Tomate", 't', "Sim", "Nao");
+    if (estoque != NULL)
+        printf(" %-8d -\n", consultaEstoque(estoque, TOMATE));
+    else
+        printf("\n");
+
+    // carne: consulta a quantidade e o vencimento mais proximo
+    printf("%-18s %-8c %-10s %-10s", "Carne", 'n', "Sim", "Sim");
+
+    if (estoque != NULL) {
+        quantidade = consultaEstoque(estoque, CARNE);
+        validade = consultaValidade(estoque, CARNE, turnoAtual);
+
+        printf(" %-8d ", quantidade);
+
+        // se houver carne preparada, mostra os turnos restantes
+        if (validade >= 0)
+            printf("%d turnos\n", validade);
+        else
+            printf("-\n");
+    }
+    else {
+        printf("\n");
+    }
+
+    // ovo: consulta a quantidade e o vencimento mais proximo
+    printf("%-18s %-8c %-10s %-10s", "Ovo frito", 'o', "Sim", "Sim");
+
+    if (estoque != NULL) {
+        quantidade = consultaEstoque(estoque, OVO);
+        validade = consultaValidade(estoque, OVO, turnoAtual);
+
+        printf(" %-8d ", quantidade);
+
+        if (validade >= 0)
+            printf("%d turnos\n", validade);
+        else
+            printf("-\n");
+    }
+    else {
+        printf("\n");
+    }
+
+    // bacon: consulta a quantidade e o vencimento mais proximo
+    printf("%-18s %-8c %-10s %-10s", "Bacon", 'b', "Sim", "Sim");
+
+    if (estoque != NULL) {
+        quantidade = consultaEstoque(estoque, BACON);
+        validade = consultaValidade(estoque, BACON, turnoAtual);
+
+        printf(" %-8d ", quantidade);
+
+        if (validade >= 0)
+            printf("%d turnos\n", validade);
+        else
+            printf("-\n");
+    }
+    else {
+        printf("\n");
+    }
+
+    printf("--------------------------------------------------------------------------\n");
+
+    // explica o significado das informacoes exibidas durante a partida
+    if (estoque != NULL) {
+        printf("(-) Sem necessidade de preparo ou sem prazo de validade.\n");
+        printf("Validade: turnos restantes da unidade que vence primeiro.\n");
+    }
 }
 
 // exibe as instrucoes e regras do Dado Burger
@@ -300,7 +332,7 @@ static void exibeInstrucoes(void) {
     printf("aos pedidos de uma serie de clientes ao longo do dia.\n\n");
 
     // mostra a tabela de ingredientes e seus simbolos
-    exibeTabelaIngredientes(NULL);
+    exibeTabelaIngredientes(NULL, 0);
     printf("\n");
 
     printf("ACOES DISPONIVEIS:\n");
@@ -440,17 +472,17 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
             exibeProgressoMontagem(&jogo);
 
         // mostra os ingredientes e seus simbolos
-        exibeTabelaIngredientes(&jogo.estoque);
+        exibeTabelaIngredientes(&jogo.estoque, jogo.turno);
 
         // apresenta as acoes disponiveis
         printf("\n---------- MENU ----------\n");
         printf("1 - Preparar ingrediente\n");
         printf("2 - Adicionar ingrediente ao hamburguer\n");
         printf("3 - Remover ingrediente do hamburguer\n");
-        printf("4 - Consultar estoque\n");
-        printf("5 - Consultar pedido atual\n");
+        printf("4 - Consultar pedido atual\n");
         printf("0 - Abandonar partida\n");
         printf("--------------------------\n");
+        printf("-> ");
 
         leitura = leInteiro(&opcao); // entrada da acao escolhida
 
@@ -501,10 +533,6 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
                 break;
             
             case 4:
-                // consulta o estoque
-                exibeEstoque(&jogo.estoque);
-                break;
-            case 5:
                 // consulta o pedido
                 exibePedido(&jogo);
                 // muda o estado da flag
@@ -648,7 +676,7 @@ static int inicializaPrograma(const char *arquivoPedidos, const char *arquivoHis
 
 // exibe as opcoes disponiveis no menu principal
 static void exibeMenuPrincipal(void) {
-    printf("\n---- ESCOLHA UMA OPCAO ----\n\n");
+    printf("\n---- ESCOLHA UMA OPCAO ----\n");
     printf(" NOVO JOGO --> 1\n");
     printf(" COMO JOGAR --> 2\n");
     printf(" HISTORICO --> 3\n");

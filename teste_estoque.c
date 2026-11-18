@@ -3,20 +3,24 @@
 
 static int falhas = 0;
 
-static void confere(const char *desc, int obtido, int esperado){
+static void confere(const char *desc, int obtido, int esperado)
+{
     if (obtido == esperado)
         printf("[ok]    %s\n", desc);
-    else {
+    else
+    {
         printf("[FALHA] %s (obtido %d, esperado %d)\n", desc, obtido, esperado);
         falhas++;
     }
 }
 
-static void secao(const char *titulo){
+static void secao(const char *titulo)
+{
     printf("\n== %s ==\n", titulo);
 }
 
-int main(void){
+int main(void)
+{
     Estoque e;
     int v;
 
@@ -30,16 +34,73 @@ int main(void){
     confere("cebola comeca com 0", consultaEstoque(&e, CEBOLA), 0);
     confere("tomate comeca com 0", consultaEstoque(&e, TOMATE), 0);
 
+    // verifica se o vencimento e calculado corretamente
     secao("preparaIngrediente: calculo do vencimento (preparo no turno 10)");
+
     confere("prepara carne", preparaIngrediente(&e, CARNE, 10), 1);
     consultaMinHeap(&e.carne, &v);
-    confere("carne vence no turno 14", v, 14);
+    confere("vencimento da carne", v, 10 + VENC_CARNE);
+
     confere("prepara ovo", preparaIngrediente(&e, OVO, 10), 1);
     consultaMinHeap(&e.ovo, &v);
-    confere("ovo vence no turno 13", v, 13);
+    confere("vencimento do ovo", v, 10 + VENC_OVO);
+
     confere("prepara bacon", preparaIngrediente(&e, BACON, 10), 1);
     consultaMinHeap(&e.bacon, &v);
-    confere("bacon vence no turno 15", v, 15);
+    confere("vencimento do bacon", v, 10 + VENC_BACON);
+
+    // testa a consulta dos turnos restantes de validade
+    secao("consultaValidade");
+
+    // reinicia o estoque para comecar os testes sem ingredientes
+    inicializaEstoque(&e);
+
+    // verifica a consulta com os heaps vazios
+    confere("carne vazia retorna -1", consultaValidade(&e, CARNE, 1), -1);
+    confere("ovo vazio retorna -1", consultaValidade(&e, OVO, 1), -1);
+    confere("bacon vazio retorna -1", consultaValidade(&e, BACON, 1), -1);
+
+    // prepara uma unidade de cada ingrediente perecivel no turno 10
+    preparaIngrediente(&e, CARNE, 10); // vence no turno 14
+    preparaIngrediente(&e, OVO, 10);   // vence no turno 14
+    preparaIngrediente(&e, BACON, 10); // vence no turno 14
+
+    // verifica a validade logo apos o preparo
+    confere("carne tem 4 turnos", consultaValidade(&e, CARNE, 10), 4);
+    confere("ovo tem 4 turnos", consultaValidade(&e, OVO, 10), 4);
+    confere("bacon tem 4 turnos", consultaValidade(&e, BACON, 10), 4);
+
+    // verifica se a validade diminui conforme o turno avanca
+    confere("carne no turno 11 tem 3 turnos", consultaValidade(&e, CARNE, 11), 3);
+    confere("carne no turno 12 tem 2 turnos", consultaValidade(&e, CARNE, 12), 2);
+    confere("carne no turno 13 tem 1 turno", consultaValidade(&e, CARNE, 13), 1);
+
+    // verifica se a consulta nao remove ingredientes do estoque
+    confere("carne continua no estoque", consultaEstoque(&e, CARNE), 1);
+    confere("ovo continua no estoque", consultaEstoque(&e, OVO), 1);
+    confere("bacon continua no estoque", consultaEstoque(&e, BACON), 1);
+
+    // prepara mais carnes com vencimentos diferentes
+    preparaIngrediente(&e, CARNE, 15); // vence no turno 19
+    preparaIngrediente(&e, CARNE, 12); // vence no turno 16
+
+    // o heap deve consultar a carne que vence primeiro
+    confere("carne com vencimento mais proximo", consultaValidade(&e, CARNE, 13), 1);
+    confere("tres carnes continuam no estoque", consultaEstoque(&e, CARNE), 3);
+
+    // descarta a carne que vence no turno 14
+    verificaVencimentos(&e, 14);
+
+    confere("carne mais antiga foi descartada", consultaEstoque(&e, CARNE), 2);
+    confere("proxima carne vence em 2 turnos", consultaValidade(&e, CARNE, 14), 2);
+
+    // verifica parametros invalidos
+    confere("estoque NULL retorna -2", consultaValidade(NULL, CARNE, 1), -2);
+    confere("ingrediente invalido retorna -2",
+            consultaValidade(&e, (IngredienteEstoque)99, 1), -2);
+    confere("ingrediente nao perecivel retorna -2",
+            consultaValidade(&e, CEBOLA, 1), -2);
+    confere("turno negativo retorna -2", consultaValidade(&e, CARNE, -1), -2);
 
     secao("preparaIngrediente: perenes");
     preparaIngrediente(&e, QUEIJO_SUICO, 1);
@@ -56,9 +117,9 @@ int main(void){
 
     secao("consomeIngrediente: perecivel consome o que vence primeiro");
     inicializaEstoque(&e);
-    preparaIngrediente(&e, CARNE, 5);   // vence 9
-    preparaIngrediente(&e, CARNE, 1);   // vence 5
-    preparaIngrediente(&e, CARNE, 3);   // vence 7
+    preparaIngrediente(&e, CARNE, 5); // vence 9
+    preparaIngrediente(&e, CARNE, 1); // vence 5
+    preparaIngrediente(&e, CARNE, 3); // vence 7
     confere("carne = 3", consultaEstoque(&e, CARNE), 3);
     confere("consome 1 carne", consomeIngrediente(&e, CARNE), 1);
     confere("carne = 2", consultaEstoque(&e, CARNE), 2);
@@ -93,9 +154,9 @@ int main(void){
 
     secao("verificaVencimentos: exemplo do enunciado (carne preparada nos turnos 1, 2 e 3)");
     inicializaEstoque(&e);
-    preparaIngrediente(&e, CARNE, 1);   // vence 5
-    preparaIngrediente(&e, CARNE, 2);   // vence 6
-    preparaIngrediente(&e, CARNE, 3);   // vence 7
+    preparaIngrediente(&e, CARNE, 1); // vence 5
+    preparaIngrediente(&e, CARNE, 2); // vence 6
+    preparaIngrediente(&e, CARNE, 3); // vence 7
     confere("turno 4: nada descartado", verificaVencimentos(&e, 4), 0);
     confere("turno 4: carne = 3", consultaEstoque(&e, CARNE), 3);
     confere("turno 5: descarta 1 (vencimento == turno)", verificaVencimentos(&e, 5), 1);
@@ -105,41 +166,66 @@ int main(void){
     confere("turno 7: carne = 0", consultaEstoque(&e, CARNE), 0);
     confere("heap vazio: nada a descartar", verificaVencimentos(&e, 99), 0);
 
+    // verifica se o heap descarta primeiro os ingredientes mais antigos
+    // independentemente da ordem em que foram preparados
     secao("verificaVencimentos: heap fora de ordem de insercao");
-    inicializaEstoque(&e);
-    preparaIngrediente(&e, OVO, 9);     // vence 12
-    preparaIngrediente(&e, OVO, 1);     // vence 4
-    preparaIngrediente(&e, OVO, 2);     // vence 5
-    preparaIngrediente(&e, OVO, 20);    // vence 23
-    confere("turno 6: descarta 2 (vencimentos 4 e 5)", verificaVencimentos(&e, 6), 2);
-    confere("ovo = 2", consultaEstoque(&e, OVO), 2);
-    consultaMinHeap(&e.ovo, &v);
-    confere("menor restante e 12", v, 12);
-    confere("turno 12: descarta 1", verificaVencimentos(&e, 12), 1);
-    consultaMinHeap(&e.ovo, &v);
-    confere("menor restante e 23", v, 23);
 
-    secao("verificaVencimentos: os tres pereciveis (preparo no turno 10: 14, 13, 15)");
     inicializaEstoque(&e);
+
+    preparaIngrediente(&e, OVO, 9);  // vence no turno 13
+    preparaIngrediente(&e, OVO, 1);  // vence no turno 5
+    preparaIngrediente(&e, OVO, 2);  // vence no turno 6
+    preparaIngrediente(&e, OVO, 20); // vence no turno 24
+
+    // no turno 6, os ovos com vencimentos 5 e 6 devem ser descartados
+    confere("turno 6: descarta 2 ovos", verificaVencimentos(&e, 6), 2);
+    confere("ovo = 2", consultaEstoque(&e, OVO), 2);
+
+    // o proximo vencimento deve ser o do ovo preparado no turno 9
+    consultaMinHeap(&e.ovo, &v);
+    confere("menor restante e 13", v, 13);
+
+    // descarta o ovo que vence no turno 13
+    confere("turno 13: descarta 1", verificaVencimentos(&e, 13), 1);
+
+    // o ultimo ovo deve vencer no turno 24
+    consultaMinHeap(&e.ovo, &v);
+    confere("menor restante e 24", v, 24);
+
+    // verifica o vencimento simultaneo dos tres ingredientes pereciveis
+    secao("verificaVencimentos: os tres pereciveis");
+
+    inicializaEstoque(&e);
+
+    // prepara todos os ingredientes no turno 10
     preparaIngrediente(&e, CARNE, 10);
     preparaIngrediente(&e, OVO, 10);
     preparaIngrediente(&e, BACON, 10);
     preparaIngrediente(&e, CEBOLA, 10);
+
+    // nenhum ingrediente deve vencer antes do turno 14
     confere("turno 12: nada vence", verificaVencimentos(&e, 12), 0);
-    confere("turno 13: so o ovo", verificaVencimentos(&e, 13), 1);
-    confere("ovo = 0", consultaEstoque(&e, OVO), 0);
-    confere("carne ainda = 1", consultaEstoque(&e, CARNE), 1);
-    confere("bacon ainda = 1", consultaEstoque(&e, BACON), 1);
-    confere("turno 15: carne e bacon de uma vez", verificaVencimentos(&e, 15), 2);
+    confere("turno 13: nada vence", verificaVencimentos(&e, 13), 0);
+
+    // os tres pereciveis vencem simultaneamente no turno 14
+    confere("turno 14: descarta os tres", verificaVencimentos(&e, 14), 3);
+
+    // verifica se todos foram removidos
     confere("carne = 0", consultaEstoque(&e, CARNE), 0);
+    confere("ovo = 0", consultaEstoque(&e, OVO), 0);
     confere("bacon = 0", consultaEstoque(&e, BACON), 0);
+
+    // ingredientes nao pereciveis nao devem ser descartados
     confere("cebola nao e afetada (perene)", consultaEstoque(&e, CEBOLA), 1);
 
     secao("sequencia: preparar, vencer, consumir");
     inicializaEstoque(&e);
-    preparaIngrediente(&e, BACON, 1);   // vence 6
-    preparaIngrediente(&e, BACON, 4);   // vence 9
-    verificaVencimentos(&e, 6);             // a primeira vence
+    // prepara dois bacons em turnos diferentes
+    preparaIngrediente(&e, BACON, 1); // vence no turno 5
+    preparaIngrediente(&e, BACON, 4); // vence no turno 8
+
+    // descarta apenas o primeiro bacon
+    verificaVencimentos(&e, 6);
     confere("sobrou 1 bacon", consultaEstoque(&e, BACON), 1);
     confere("consome o que sobrou", consomeIngrediente(&e, BACON), 1);
     confere("heap vazio apos consumir (consulta retorna 0)", consultaMinHeap(&e.bacon, &v), 0);

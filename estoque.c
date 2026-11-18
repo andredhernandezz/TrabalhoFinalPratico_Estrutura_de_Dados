@@ -144,4 +144,42 @@ int consultaEstoque(const Estoque *estoque, IngredienteEstoque ing){
     }
 }
 
+// consulta a validade restante do ingrediente perecivel
+int consultaValidade(const Estoque *estoque, IngredienteEstoque ing, int turnoAtual) {
+    int vencimento;
+    int resultado;
 
+    // verifica se os parametros recebidos sao validos
+    if (estoque == NULL || turnoAtual < 0)
+        return -2;
+
+    // consulta o heap correspondente ao ingrediente
+    switch (ing) {
+        case CARNE:
+            resultado = consultaMinHeap(&estoque->carne, &vencimento);
+            break;
+
+        case OVO:
+            resultado = consultaMinHeap(&estoque->ovo, &vencimento);
+            break;
+
+        case BACON:
+            resultado = consultaMinHeap(&estoque->bacon, &vencimento);
+            break;
+
+        default:
+            // a funcao deve ser utilizada apenas com ingredientes pereciveis
+            return -2;
+    }
+
+    // verifica se ocorreu um erro na consulta
+    if (resultado == -1)
+        return -2;
+
+    // verifica se nao existe nenhuma unidade preparada
+    if (resultado == 0)
+        return -1;
+
+    // calcula quantos turnos faltam para o vencimento
+    return vencimento - turnoAtual;
+}

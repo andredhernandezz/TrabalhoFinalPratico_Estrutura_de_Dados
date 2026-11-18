@@ -5,8 +5,8 @@
 
 // validade em turnos de cada tipo de alimento perecivel
 #define VENC_CARNE 4
-#define VENC_OVO 3
-#define VENC_BACON 5
+#define VENC_OVO 4
+#define VENC_BACON 4
 
 typedef enum {
     CARNE,
@@ -45,6 +45,10 @@ int verificaVencimentos(Estoque *estoque, int turnoAtual);
 
 // quantidade disponivel, ou -1 se invalido
 int consultaEstoque(const Estoque *estoque, IngredienteEstoque ing);
+
+// consulta quantos turnos faltam para o vencimento mais proximo
+// retorna os turnos restantes, -1 se nao ha ingrediente ou -2 se os parametros forem invalidos
+int consultaValidade(const Estoque *estoque, IngredienteEstoque ing, int turnoAtual);
 
 #endif
 
