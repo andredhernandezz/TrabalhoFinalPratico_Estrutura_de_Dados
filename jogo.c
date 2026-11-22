@@ -352,10 +352,13 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
                 verificaVencimentos(&j->estoque, j->turno);
 
                 // Calcula a pontuacao usando a paciencia restante do cliente.
-                j->pontuacao += RECOMPENSA_CLIENTE + BONUS_PACIENCIA * j->paciencia;
+                j->pontuacao++;
 
                 // Como todos os clientes foram atendidos, encerra com vitoria.
                 j->status = JOGO_VITORIA;
+
+                // nao ha proximo cliente: encerra a acao aqui
+                return ACAO_SUCESSO;
             }
 
             /* ainda existem clientes depois do atual.
@@ -400,9 +403,8 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
             j->atendidos++;
             j->turno++;
 
-            // Atualiza a pontuacao.
-            j->pontuacao += RECOMPENSA_CLIENTE
-                      + BONUS_PACIENCIA * j->paciencia;
+            // Atualiza a pontuacao (numero de clientes atendidos).
+            j->pontuacao++;
 
             // Esvazia o hamburguer do cliente anterior.
             esvaziaPilha(&j->prato);

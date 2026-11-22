@@ -1,0 +1,6 @@
+# make -f Makefile.gui run   (Linux/macOS: precisa de raylib instalada)
+SRC = main_gui.c avl_tad.c busca.c carregamento.c estoque.c fila_tad.c hash_tad.c heap_tad.c historico.c jogo.c lista_contig_tad.c lista_tad.c metricas.c ordenacao.c pilha_tad.c timer.c
+dado_burger_gui: $(SRC)
+	gcc -std=gnu99 -O2 $(SRC) -o $@ -lraylib -lm
+run: dado_burger_gui
+	./dado_burger_gui pedidos.txt historico.txt

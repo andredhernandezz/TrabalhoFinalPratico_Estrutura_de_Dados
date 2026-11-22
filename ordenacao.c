@@ -244,7 +244,6 @@ void testarOrdenacao(const char *nome, int (*alg)(ListaContig *), const ListaCon
     if (r != 1)
         printf("Erro ao ordenar com %s.\n", nome);
     else {
-        printf("%s | n = %d | Tempo: %.6f s\n", nome, base->tamanho, seg);
         metricasLogOrdenacao("medicoes.log", nome, base->tamanho, seg);
     }
     free(copia.dados);

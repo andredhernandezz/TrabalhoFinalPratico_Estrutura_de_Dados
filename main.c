@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ctype.h>
-#include <limits.h>
 
 #include "timer.h"
 #include "avl_tad.h"
@@ -16,12 +14,6 @@
 #include "fila_tad.h"
 #include "ordenacao.h"
 #include "jogo.h"
-
-/* PRA QUANDO EXISTIR A LOGICA DO JOGO:
-int buscarPedido(NodoAvl *raiz, TabelaHash *cache, int cod, Pedido *out, MetricasBusca *mb);
-int salvarPartida(const char *arq, ListaContig *lista, const char *nome, int pontuacao);
-int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempo);
-*/
 
 // le um numero inteiro, rejeitando entradas invalidas
 // retorna 1 se valido, 0 se invalido e -1 se chegar ao EOF
@@ -120,10 +112,6 @@ static void exibePedido(const Jogo *j){
 
 // mostra o pedido, a montagem atual e o proximo ingrediente esperado
 static void exibeProgressoMontagem(const Jogo *j) {
-    const NodoLista *ingrediente = j->receita.ini;
-    int adicionados = tamanhoPilha(&j->prato);
-    int i;
-
     printf("\n------ PROGRESSO DA MONTAGEM ------\n");
 
     // mostra a sequencia completa do pedido
@@ -133,11 +121,6 @@ static void exibeProgressoMontagem(const Jogo *j) {
     // mostra os ingredientes que ja estao no hamburguer
     printf("Montagem: ");
     imprimePilha(&j->prato);
-
-    // avanca na receita a quantidade de ingredientes ja adicionados
-    for (i = 0; i < adicionados && ingrediente != NULL; i++) {
-        ingrediente = ingrediente->prox;
-    }
 
     printf("-----------------------------------\n");
 }
@@ -342,15 +325,12 @@ static void exibeInstrucoes(void) {
     printf("Acoes de consulta (ver estoque, ver pedido, etc.): nao consomem turno.\n\n");
 
     printf("CONDICOES DE VITORIA E DERROTA:\n");
-    printf("Vitoria: atender todos os 10 clientes antes que percam a paciencia.\n");
+    printf("Vitoria: atender todos os %d clientes sem que nenhum perca a paciencia.\n", MAX_CLIENTES);
     printf("Derrota: deixar a paciencia de um cliente chegar a zero.\n");
     printf("Abandono: escolher a opcao 0 durante a partida.\n\n");
 
     printf("PONTUACAO:\n");
-    printf("Cada cliente atendido rende %d pontos.\n", RECOMPENSA_CLIENTE);
-    printf("Voce tambem recebe %d pontos por unidade de paciencia restante.\n",
-           BONUS_PACIENCIA);
-    printf("Quanto mais rapido atender os clientes, maior sera sua pontuacao!\n\n");
+    printf("A pontuacao e o numero de clientes atendidos ate o fim da partida.\n\n");
 
     printf("INGREDIENTES PERECIVEIS:\n");
     printf("Carne, ovo e bacon possuem prazo de validade apos o preparo.\n");
@@ -446,7 +426,6 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
     int opcao;
     char simbolo;
     int leitura;
-    int pedidoConsultado = 0;
     ResultadoAcao resultado;
 
     // pede o nome do usuario para iniciar a partida
@@ -467,9 +446,8 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
         // mostra o estado atual da partida
         exibeEstado(&jogo);
 
-        // mostra o progresso da montagem depois da primeira consulta ao pedido
-        if (pedidoConsultado == 1)
-            exibeProgressoMontagem(&jogo);
+        // mostra sempre o pedido e o hamburguer montado ate agora
+        exibeProgressoMontagem(&jogo);
 
         // mostra os ingredientes e seus simbolos
         exibeTabelaIngredientes(&jogo.estoque, jogo.turno);
@@ -535,8 +513,6 @@ static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquiv
             case 4:
                 // consulta o pedido
                 exibePedido(&jogo);
-                // muda o estado da flag
-                pedidoConsultado = 1;
                 break;
             case 0:
                 // encerra a partida

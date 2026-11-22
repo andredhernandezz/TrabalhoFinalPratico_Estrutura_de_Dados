@@ -10,9 +10,7 @@
 #include "metricas.h"
 
 #define MAX_CLIENTES 10
-#define MAX_PACIENCIA 20
-#define RECOMPENSA_CLIENTE 100
-#define BONUS_PACIENCIA 15
+#define MAX_PACIENCIA 15
 
 typedef enum{
     JOGO_ANDAMENTO, // partida em andamento

@@ -39,8 +39,8 @@ static int codigoValido(const char *texto, int *codigo) {
            texto[i] == '\n' || texto[i] == '\r')
         i++;
 
-    // rejeita numeros vazios, zero ou caracteres adicionais
-    if (digitos == 0 || valor == 0 || texto[i] != '\0')
+    // rejeita numeros vazios ou caracteres adicionais (codigo 0 e aceito)
+    if (digitos == 0 || texto[i] != '\0')
         return 0;
 
     *codigo = valor;
@@ -66,6 +66,10 @@ int carregarPedidos(const char *nomeArquivo, NodoAvl **raiz) {
 
     // cada pedido ocupa duas linhas, a primeira contem o codigo e a segunda contem a receita
     while (fgets(linhaCodigo, MAX_LINHA, f) != NULL) {
+
+        // ignora linhas em branco entre registros ou no fim do arquivo
+        if (linhaCodigo[strspn(linhaCodigo, " \t\r\n")] == '\0')
+            continue;
 
         // verifica se a linha do codigo nao ultrapassou o limite
         if (strchr(linhaCodigo, '\n') == NULL && (int)strlen(linhaCodigo) == MAX_LINHA - 1) {
