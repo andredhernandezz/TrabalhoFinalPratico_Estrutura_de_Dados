@@ -508,19 +508,33 @@ static Texture2D carrega(const char *p) {        /* carrega PNG opcional com fil
 /* ---------------------------------- main ---------------------------------- */
 int main(int argc, char *argv[]) {
     if (argc < 3) { fprintf(stderr, "Uso: %s <pedidos> <historico>\n", argv[0]); return 1; }
-    srand((unsigned)time(NULL)); arqHist = argv[2]; raiz = NULL; inicializaListaContig(&hist); avlZerarMetricas();
+    srand((unsigned)time(NULL));
+    arqHist = argv[2];
+    raiz = NULL;
+    if (inicializaListaContig(&hist) != 1) {
+        fprintf(stderr, "Erro: memoria insuficiente para inicializar o historico.\n");
+        return 1;
+    }
+    avlZerarMetricas();
     Timer t; timer_iniciar(&t); int lidos = carregarPedidos(argv[1], &raiz); double tc = timer_parar(&t);   /* mesma carga do modo terminal */
     if (lidos < 0) {
         if (lidos == -3)
             fprintf(stderr, "Erro: memoria insuficiente para carregar os pedidos.\n");
         else
             fprintf(stderr, "Erro ao carregar pedidos.\n");
-        // libera os pedidos carregados antes da falha
         raiz = avlDestruir(raiz);
         destroiListaContig(&hist);
         return 1;
     }
-    int nh = carregarHistorico(argv[2], &hist); Contador mc = avlObterMetricas();
+    int nh = carregarHistorico(argv[2], &hist);
+    if (nh < 0) {
+        fprintf(stderr, "Erro: nao foi possivel carregar o historico.\n");
+        raiz = avlDestruir(raiz);
+        destroiListaContig(&hist);
+
+        return 1;
+    }
+    Contador mc = avlObterMetricas();
     carga = (MetricasCarga){ mc.nosInserido, avlAltura(raiz), mc.rotacoes, tc, nh }; metricasLogCarga(LOG, &carga);
 
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT); InitWindow(W, H, "Dado Burger"); SetTargetFPS(60); SetExitKey(KEY_NULL);

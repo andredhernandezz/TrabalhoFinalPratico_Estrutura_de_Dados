@@ -597,8 +597,11 @@ static int inicializaPrograma(const char *arquivoPedidos, const char *arquivoHis
     // comeca com a arvore vazia
     *raiz = NULL;
 
-    // inicializa a lista do historico
-    inicializaListaContig(hist);
+    // inicializa a lista do historico e verifica se houve falha
+        if (inicializaListaContig(hist) != 1) {
+            printf("Erro: memoria insuficiente para inicializar o historico.\n");
+            return 0;
+        }
 
     // zera as metricas da AVL antes do carregamento
     avlZerarMetricas();
@@ -635,6 +638,12 @@ static int inicializaPrograma(const char *arquivoPedidos, const char *arquivoHis
 
     // carrega os resultados de partidas anteriores
     int nHist = carregarHistorico(arquivoHistorico, hist);
+
+    // verifica falha no carregarHistorico
+    if (nHist < 0) {
+        printf("Erro: nao foi possivel carregar o historico.\n");
+        return 0;
+    }
 
     if (nHist == 0)
         printf("Historico vazio ou nao encontrado.\n");

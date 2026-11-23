@@ -71,14 +71,22 @@ static int pontuacaoValida(const char *texto) {
 }
 
 int carregarHistorico(const char *nomeArquivo, ListaContig *lista) {
+    // verifica se os parametros e a lista sao validos
+    if (nomeArquivo == NULL || lista == NULL || lista->dados == NULL)
+        return -1;
+
     FILE *f = fopen(nomeArquivo, "r");
-    if (!f)
+
+    // se o arquivo nao existir, considera o historico vazio
+    if (f == NULL)
         return 0;
 
     char linhaNome[MAX_LINHA], linhaPont[MAX_LINHA];
     int carregadas = 0;
 
-    while (lerLinha(f, linhaNome, sizeof linhaNome) && lerLinha(f, linhaPont, sizeof linhaPont)) {
+    while (lerLinha(f, linhaNome, sizeof linhaNome) &&
+           lerLinha(f, linhaPont, sizeof linhaPont)) {
+
         // ignora registros com pontuacao invalida ou fora do intervalo
         if (!pontuacaoValida(linhaPont))
             continue;
@@ -89,10 +97,14 @@ int carregarHistorico(const char *nomeArquivo, ListaContig *lista) {
         NovoHistorico h;
         strncpy(h.nome, linhaNome, sizeof h.nome - 1);
         h.nome[sizeof h.nome - 1] = '\0';
-        h.pontuacao = (int)pont;
+        h.pontuacao = pont;
 
-        if (insereFimContig(lista, h) != 1)
-            break;                          /* sem memoria */
+        // interrompe o carregamento se nao conseguir inserir o registro
+        if (insereFimContig(lista, h) != 1) {
+            fclose(f);
+            return -1;
+        }
+
         carregadas++;
     }
 
