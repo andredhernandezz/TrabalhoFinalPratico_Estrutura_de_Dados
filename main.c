@@ -615,8 +615,13 @@ static int inicializaPrograma(const char *arquivoPedidos, const char *arquivoHis
     if (lidos < 0) {
         if (lidos == -1)
             printf("Erro ao abrir arquivo de pedidos: %s\n", arquivoPedidos);
+        else if (lidos == -3)
+            printf("Erro: memoria insuficiente para carregar os pedidos.\n");
         else
             printf("Erro: arquivo de pedidos invalido ou leitura interrompida.\n");
+
+        // libera os pedidos que ja haviam sido inseridos
+        *raiz = avlDestruir(*raiz);
 
         return 0;
     }

@@ -24,6 +24,7 @@ Contador avlObterMetricas(void);
 
 int avlAltura(const NodoAvl *no);
 int avlFb(const NodoAvl *no);
+int avlErroInsercao(void);
 void avlAtualizarAltura(NodoAvl *no);
 NodoAvl* avlRotDir(NodoAvl *y);
 NodoAvl* avlRotEsq(NodoAvl *x);

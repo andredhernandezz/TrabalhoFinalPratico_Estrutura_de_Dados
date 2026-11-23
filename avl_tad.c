@@ -3,6 +3,8 @@
 
 static Contador contador;
 
+static int erroInsercao = 0; // registra se a ultima insercao falhou por falta de memoria
+
 
 void avlZerarMetricas(void){
     contador.rotacoes = 0;
@@ -113,31 +115,66 @@ NodoAvl* avlBuscar(NodoAvl *raiz, int cod) {
     return avlBuscar(raiz->dir, cod);
 }
 
-/* Inserção: descida igual à Abp; na subida, reequilibra cada ancestral.
-   No máximo uma rotação por inserção.
-   Uso: raiz = avlInserir(raiz, Pedido); */
-NodoAvl* avlInserir(NodoAvl *raiz, Pedido valor) {
+/* Insere um pedido na AVL e informa se houve falha de alocacao.
+   Em caso de erro, preserva os ponteiros da arvore existente. */
+static NodoAvl* avlInserirAux(NodoAvl *raiz, Pedido valor, int *erro) {
     if (raiz == NULL) {
         NodoAvl *novo = (NodoAvl*) malloc(sizeof(NodoAvl));
-        if (novo == NULL){
+
+        // se nao houver memoria, informa o erro e nao cria o nodo
+        if (novo == NULL) {
+            *erro = 1;
             return NULL;
         }
+
         contador.nosInserido++;
-        novo->dado   = valor;
-        novo->esq    = NULL;
-        novo->dir    = NULL;
+
+        novo->dado = valor;
+        novo->esq = NULL;
+        novo->dir = NULL;
         novo->altura = 1;
+
         return novo;
     }
-    if (valor.cod < raiz->dado.cod){
-        raiz->esq = avlInserir(raiz->esq, valor);
+
+    // procura a posicao correta para inserir o pedido
+    if (valor.cod < raiz->dado.cod) {
+        NodoAvl *filho = avlInserirAux(raiz->esq, valor, erro);
+
+        // se a alocacao falhou, mantem o filho original
+        if (*erro)
+            return raiz;
+
+        raiz->esq = filho;
     }
-    else if (valor.cod > raiz->dado.cod){
-        raiz->dir = avlInserir(raiz->dir, valor);
+    else if (valor.cod > raiz->dado.cod) {
+        NodoAvl *filho = avlInserirAux(raiz->dir, valor, erro);
+
+        // se a alocacao falhou, mantem o filho original
+        if (*erro)
+            return raiz;
+
+        raiz->dir = filho;
     }
-    else
-        return raiz;   /* duplicado: ignora */
+    else {
+        // pedidos com codigo duplicado nao sao inseridos
+        return raiz;
+    }
+
+    // atualiza as alturas e corrige possiveis desequilibrios
     return avlReequilibrar(raiz);
+}
+
+// Inicia a insercao de um pedido e registra possiveis falhas de alocacao. 
+NodoAvl* avlInserir(NodoAvl *raiz, Pedido valor) {
+    erroInsercao = 0;
+
+    return avlInserirAux(raiz, valor, &erroInsercao);
+}
+
+/* Informa se a ultima insercao falhou por falta de memoria. */
+int avlErroInsercao(void) {
+    return erroInsercao;
 }
 
 /* Destroi toda a árvore em pós-ordem.

@@ -263,15 +263,52 @@ static void novaPartida(void) {
     if (!iniciaJogo(&jogo, raiz, MAX_CLIENTES, MAX_PACIENCIA)) { aviso("Erro ao iniciar a partida", RED); return; }
     toastT = 0; tPush = -9; irPara(T_JOGO);
 }
+
 static void encerra(void) {
-    fim.st = jogo.status; fim.atend = jogo.atendidos; fim.total = jogo.totalClientes; fim.pont = jogo.pontuacao; fim.turno = jogo.turno;
-    fim.hits = jogo.cache.hits; fim.misses = jogo.cache.misses; fim.col = jogo.cache.colisoes; fim.n = jogo.cache.n; fim.m = jogo.cache.m;
-    fim.buscas = jogo.buscas.buscas; fim.comps = jogo.buscas.comparacoes; fim.tBusca = jogo.buscas.tempo;
-    salvarPartida(arqHist, &hist, nome, jogo.pontuacao);                      /* historico em arquivo */
-    MetricasHash mh = { jogo.cache.m, jogo.cache.n, jogo.cache.hits, jogo.cache.misses, jogo.cache.colisoes };
-    metricasRelatorioPartida(LOG, &carga, &jogo.buscas, &mh);                 /* relatorio + log */
-    destroiJogo(&jogo); irPara(T_FIM);
+    fim.st = jogo.status;
+    fim.atend = jogo.atendidos;
+    fim.total = jogo.totalClientes;
+    fim.pont = jogo.pontuacao;
+    fim.turno = jogo.turno;
+    fim.hits = jogo.cache.hits;
+    fim.misses = jogo.cache.misses;
+    fim.col = jogo.cache.colisoes;
+    fim.n = jogo.cache.n;
+    fim.m = jogo.cache.m;
+    fim.buscas = jogo.buscas.buscas;
+    fim.comps = jogo.buscas.comparacoes;
+    fim.tBusca = jogo.buscas.tempo;
+
+    int historicoSalvo = salvarPartida(
+        arqHist, &hist, nome, jogo.pontuacao
+    );
+
+    MetricasHash mh = {
+        jogo.cache.m,
+        jogo.cache.n,
+        jogo.cache.hits,
+        jogo.cache.misses,
+        jogo.cache.colisoes
+    };
+
+    int metricasSalvas = metricasRelatorioPartida(
+        LOG, &carga, &jogo.buscas, &mh
+    );
+
+    destroiJogo(&jogo);
+    irPara(T_FIM);
+
+    if (!historicoSalvo && !metricasSalvas) {
+        aviso("Erro ao salvar historico e metricas!", RED);
+    }
+    else if (!historicoSalvo) {
+        aviso("Erro ao salvar historico!", RED);
+    }
+    else if (!metricasSalvas) {
+        aviso("Erro ao salvar metricas!", RED);
+    }
 }
+
 /* modo: 0 adicionar, 1 preparar, 2 remover */
 static void acao(int modo, char s) {
     int at0 = jogo.atendidos, tam0 = jogo.prato.tamanho; ResultadoAcao r;
@@ -473,7 +510,16 @@ int main(int argc, char *argv[]) {
     if (argc < 3) { fprintf(stderr, "Uso: %s <pedidos> <historico>\n", argv[0]); return 1; }
     srand((unsigned)time(NULL)); arqHist = argv[2]; raiz = NULL; inicializaListaContig(&hist); avlZerarMetricas();
     Timer t; timer_iniciar(&t); int lidos = carregarPedidos(argv[1], &raiz); double tc = timer_parar(&t);   /* mesma carga do modo terminal */
-    if (lidos < 0) { fprintf(stderr, "Erro ao carregar pedidos.\n"); return 1; }
+    if (lidos < 0) {
+        if (lidos == -3)
+            fprintf(stderr, "Erro: memoria insuficiente para carregar os pedidos.\n");
+        else
+            fprintf(stderr, "Erro ao carregar pedidos.\n");
+        // libera os pedidos carregados antes da falha
+        raiz = avlDestruir(raiz);
+        destroiListaContig(&hist);
+        return 1;
+    }
     int nh = carregarHistorico(argv[2], &hist); Contador mc = avlObterMetricas();
     carga = (MetricasCarga){ mc.nosInserido, avlAltura(raiz), mc.rotacoes, tc, nh }; metricasLogCarga(LOG, &carga);
 

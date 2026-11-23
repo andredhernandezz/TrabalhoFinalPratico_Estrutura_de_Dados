@@ -112,14 +112,24 @@ int carregarPedidos(const char *nomeArquivo, NodoAvl **raiz) {
         }
 
         for (int i = 0; i < tamanho; i++) {
-            if (strchr("kmpasqctnobz", p.ingredientes[i]) == NULL) {
+            char ingrediente = p.ingredientes[i];
+
+            if (strchr("kmpasqctnobz", ingrediente) == NULL || 
+                (ingrediente == 'z' && i != tamanho - 1)) {
                 fclose(f);
                 return -2;
-            }
+            }   
         }
 
         // insere o pedido na arvore avl
         *raiz = avlInserir(*raiz, p);
+
+        // interrompe o carregamento se nao houver memoria para inserir o pedido
+        if (avlErroInsercao()) {
+            fclose(f);
+            return -3;
+        }
+
         lidos++;
     }
 
