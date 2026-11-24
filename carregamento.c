@@ -4,9 +4,10 @@
 
 #include "carregamento.h"
 
-#define MAX_LINHA 256
+#define MAX_LINHA 256 // tamanho do buffer utilizado na leitura das linhas
 
-// verifica se o texto representa um codigo inteiro positivo valido
+// verifica se o texto representa um codigo inteiro nao negativo valido
+// armazena o valor convertido em codigo
 // retorna 1 se for valido e 0 caso contrario
 static int codigoValido(const char *texto, int *codigo) {
     int i = 0;
@@ -47,6 +48,11 @@ static int codigoValido(const char *texto, int *codigo) {
     return 1;
 }
 
+// le os pedidos do arquivo, valida os codigos e as receitas e insere os pedidos na AVL
+// retorna a quantidade de pedidos lidos em caso de sucesso
+// retorna -1 se os parametros forem invalidos ou se nao conseguir abrir o arquivo
+// retorna -2 se houver erro de leitura ou dados invalidos
+// retorna -3 se houver falha de alocacao de memoria
 int carregarPedidos(const char *nomeArquivo, NodoAvl **raiz) {
 
     // verifica se os parametros sao validos
@@ -89,8 +95,8 @@ int carregarPedidos(const char *nomeArquivo, NodoAvl **raiz) {
             return -2;
         }
 
-        // verifica o codigo antes de converter para inteiro
-        // rejeita valores negativos, 0, numeros grandes demais e texto extra
+        // valida e converte o codigo para inteiro
+        // rejeita valores negativos, numeros maiores que INT_MAX e texto extra
         if (!codigoValido(linhaCodigo, &p.cod)) {
             fclose(f);
             return -2;
@@ -104,6 +110,7 @@ int carregarPedidos(const char *nomeArquivo, NodoAvl **raiz) {
         }
 
         // confere se a receita contem apenas simbolos conhecidos
+        // e se o pao superior (z) aparece somente no final
         int tamanho = (int) strlen(p.ingredientes);
 
         if (tamanho == 0 || p.ingredientes[tamanho - 1] != 'z') {
@@ -130,7 +137,7 @@ int carregarPedidos(const char *nomeArquivo, NodoAvl **raiz) {
             return -3;
         }
 
-        lidos++;
+        lidos++; // contabiliza o registro lido do arquivo
     }
 
     // verifica se a leitura terminou normalmente

@@ -19,9 +19,11 @@ typedef enum {
 } IngredienteEstoque; // enum para representar os tipos de ingredientes no estoque
 
 typedef struct {
+    // heaps que armazenam os turnos de vencimento dos pereciveis
     HeapMinimo carne;
     HeapMinimo ovo;
     HeapMinimo bacon;
+    // quantidade de unidades preparadas dos nao pereciveis
     int queijoSuico;
     int queijoCheddar;
     int cebola;
@@ -43,7 +45,8 @@ int consomeIngrediente(Estoque *estoque, IngredienteEstoque ing);
 // retorna quantas unidades foram descartadas, ou -1 se invalido
 int verificaVencimentos(Estoque *estoque, int turnoAtual);
 
-// quantidade disponivel, ou -1 se invalido
+// consulta a quantidade de unidades disponiveis do ingrediente
+// retorna -1 se os parametros forem invalidos
 int consultaEstoque(const Estoque *estoque, IngredienteEstoque ing);
 
 // consulta quantos turnos faltam para o vencimento mais proximo

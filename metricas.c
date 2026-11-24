@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "metricas.h"
 
+// escreve as metricas do carregamento inicial da AVL e do historico
 static void escreveCarga(FILE *out, const MetricasCarga *c) {
     fprintf(out, "-- AVL: carregamento --\n");
     fprintf(out, "Nos inseridos:                   %d\n", c->nos);
@@ -11,7 +12,9 @@ static void escreveCarga(FILE *out, const MetricasCarga *c) {
     fprintf(out, "Entradas carregadas:             %d\n", c->entradasHist);
 }
 
+// calcula a media de comparacoes por busca e escreve as metricas das buscas na AVL
 static void escreveBuscas(FILE *out, const MetricasBusca *b) {
+    // evita divisao por zero caso nenhuma busca tenha sido realizada
     double media = (b->buscas > 0) ? (double)b->comparacoes / b->buscas : 0.0;
 
     fprintf(out, "-- AVL: buscas durante a partida --\n");
@@ -21,10 +24,11 @@ static void escreveBuscas(FILE *out, const MetricasBusca *b) {
     fprintf(out, "Tempo total acumulado:           %.6f s\n", b->tempo);
 }
 
+// calcula o fator de carga e a taxa de acerto e escreve as estatisticas da tabela hash
 static void escreveHash(FILE *out, const MetricasHash *h) {
-    long total = h->hits + h->misses;
-    double lambda = (h->m > 0) ? (double)h->n / h->m : 0.0;
-    double taxa = (total > 0) ? 100.0 * (double)h->hits / total : 0.0;
+    long total = h->hits + h->misses; // total de consultas
+    double lambda = (h->m > 0) ? (double)h->n / h->m : 0.0; // fator de carga
+    double taxa = (total > 0) ? 100.0 * (double)h->hits / total : 0.0; // percentual de acertos
 
     fprintf(out, "-- Tabela hash --\n");
     fprintf(out, "Tamanho (m):                     %d\n", h->m);
@@ -36,12 +40,15 @@ static void escreveHash(FILE *out, const MetricasHash *h) {
     fprintf(out, "Total de colisoes:               %ld\n", h->colisoes);
 }
 
+// escreve o algoritmo utilizado, a quantidade de registros e o tempo de ordenacao
 static void escreveOrdenacao(FILE *out, const char *alg, int tamanho, double tempo) {
     fprintf(out, "-- Ordenacao do historico (ao acessar Historico) --\n");
     fprintf(out, "Tamanho: %d entradas\n", tamanho);
     fprintf(out, "%s:  %.6f s\n", alg, tempo);
 }
 
+// cria ou sobrescreve o arquivo de log com as metricas do carregamento inicial
+// retorna 1 se sucesso e 0 se houver erro na gravacao
 int metricasLogCarga(const char *arqLog, const MetricasCarga *c) {
     FILE *f = fopen(arqLog, "w");
 
@@ -63,6 +70,8 @@ int metricasLogCarga(const char *arqLog, const MetricasCarga *c) {
     return !erro;
 }
 
+// exibe o relatorio de desempenho na tela e o acrescenta ao arquivo de log
+// retorna 1 se sucesso na gravacao do arquivo e 0 caso contrario
 int metricasRelatorioPartida(const char *arqLog, const MetricasCarga *c,
                              const MetricasBusca *b, const MetricasHash *h) {
     FILE *f = fopen(arqLog, "a");
@@ -98,6 +107,8 @@ int metricasRelatorioPartida(const char *arqLog, const MetricasCarga *c,
     return !erro;
 }
 
+// exibe as metricas da ordenacao na tela e as acrescenta ao arquivo de log
+// retorna 1 se sucesso na gravacao do arquivo e 0 caso contrario
 int metricasLogOrdenacao(const char *arqLog, const char *algoritmo,
                          int tamanho, double tempo) {
     FILE *f = fopen(arqLog, "a");

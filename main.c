@@ -89,7 +89,7 @@ static int leSimbolo(char *simbolo){
     return 1;
 }
 
-// imprime os ingredientes do pedido
+// exibe o nome do cliente atual, o codigo do pedido e os ingredientes da receita
 static void exibePedido(const Jogo *j){
     Cliente atual;
 
@@ -110,7 +110,7 @@ static void exibePedido(const Jogo *j){
     printf("--=--=--=--=--=--=--=--=--=--=--=--\n\n");
 }
 
-// mostra o pedido, a montagem atual e o proximo ingrediente esperado
+// mostra a receita do pedido e os ingredientes ja adicionados ao hamburguer
 static void exibeProgressoMontagem(const Jogo *j) {
     printf("\n------ PROGRESSO DA MONTAGEM ------\n");
 
@@ -420,6 +420,8 @@ static void exibeHistorico(ListaContig *hist) {
     free(base.dados);
 }
 
+// controla uma partida, processa as acoes do jogador e exibe seus resultados
+// ao encerrar, registra a pontuacao e as metricas e libera as estruturas do jogo
 static void executaNovoJogo(NodoAvl *raiz, ListaContig *hist, const char *arquivoHistorico, const MetricasCarga *carga){
     Jogo jogo;
     char nome[50];
@@ -674,6 +676,7 @@ static void exibeMenuPrincipal(void) {
     printf("----------------------------\n");
 }
 
+// inicializa o programa, controla o menu principal e libera as estruturas ao sair
 int main(int argc, char *argv[]) {
     // verifica se os arquivos foram informados
     if (argc < 3) {
@@ -741,6 +744,7 @@ int main(int argc, char *argv[]) {
 
     } while (opcao != 0);
 
+    // libera a memoria das estruturas utilizadas durante a execucao do programa
     avlDestruir(raiz);
     destroiListaContig(&hist);
 

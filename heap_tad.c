@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include "heap_tad.h"
 
+// reorganiza o heap de baixo para cima apos a insercao de um elemento
+// troca o elemento com seu pai enquanto for menor que ele
 static void siftUp(int dados[], int i){
     while (i > 0){
         int pai = (i - 1) / 2; // calcula o indice do pai
@@ -18,6 +20,8 @@ static void siftUp(int dados[], int i){
     }
 }
 
+// reorganiza o heap de cima para baixo
+// troca o elemento com seu menor filho quando necessario
 static void heapify(int dados[], int n, int i){
     int menor = i;
     int esq = 2*i + 1;
@@ -26,7 +30,7 @@ static void heapify(int dados[], int n, int i){
     if (esq < n && dados[esq] < dados[menor]) // se o filho esquerdo for menor que o elemento atual
         menor = esq; // atualiza o menor para o filho esquerdo
 
-    if (dir < n && dados[dir] < dados[menor]) // se o filho direito for menor que o elemento atual
+    if (dir < n && dados[dir] < dados[menor]) // se o filho direito for menor que o menor encontrado ate agora
         menor = dir; // atualiza o menor para o filho direito
 
     if (menor != i){ // se o menor nao for o elemento atual
@@ -38,7 +42,7 @@ static void heapify(int dados[], int n, int i){
     }
 }
 
-
+// inicializa um heap vazio
 void inicializaHeap(HeapMinimo *heap){
     if (heap == NULL)
         return;
@@ -46,6 +50,8 @@ void inicializaHeap(HeapMinimo *heap){
     heap->tam=0; // inicializa o tamanho do heap como 0
 }
 
+// verifica se o heap esta vazio
+// retorna 1 se vazio, 0 se nao vazio e -1 se invalido
 int heapVazio(const HeapMinimo *heap){
     if (heap == NULL || heap->tam < 0 || heap->tam > CAP) // verifica se o heap é inválido
         return -1;
@@ -53,6 +59,8 @@ int heapVazio(const HeapMinimo *heap){
     return heap->tam == 0; // retorna 1 se vazio, 0 se não vazio
 }
 
+// insere um turno de vencimento e reorganiza o heap utilizando siftUp
+// retorna 1 em caso de sucesso, 0 se cheio e -1 se invalido
 int insereHeap(HeapMinimo *heap, int vencimento){
     if (heap == NULL || heap->tam < 0 || heap->tam > CAP) // verifica se o heap é inválido
         return -1;
@@ -66,6 +74,8 @@ int insereHeap(HeapMinimo *heap, int vencimento){
     return 1; // sucesso
 }
 
+// consulta o menor turno de vencimento sem remover o elemento
+// retorna 1 em caso de sucesso, 0 se vazio e -1 se os parametros forem invalidos
 int consultaMinHeap(const HeapMinimo *heap, int *vencimento){
     if (heap == NULL || heap->tam < 0 || heap->tam > CAP || vencimento == NULL) // verifica se heap e vencimento são inválidos
         return -1;
@@ -77,6 +87,8 @@ int consultaMinHeap(const HeapMinimo *heap, int *vencimento){
     return 1; // sucesso
 }
 
+// remove o menor turno de vencimento e reorganiza o heap utilizando heapify
+// retorna 1 em caso de sucesso, 0 se vazio e -1 se os parametros forem invalidos
 int removeMinHeap(HeapMinimo *heap, int *vencimento){
     if (heap == NULL || heap->tam < 0 || heap->tam > CAP || vencimento == NULL) // verifica se heap e vencimento são inválidos
         return -1;
@@ -95,6 +107,7 @@ int removeMinHeap(HeapMinimo *heap, int *vencimento){
     return 1; // sucesso
 }
 
+// retorna a quantidade de elementos armazenados no heap ou -1 se invalido
 int tamanhoHeap(const HeapMinimo *heap){
     if (heap == NULL || heap->tam < 0 || heap->tam > CAP) // verifica se o heap é inválido
         return -1;

@@ -2,11 +2,11 @@
 #ifndef HEAP_TAD_H
 #define HEAP_TAD_H
 
-#define CAP 1024
+#define CAP 1024 // capacidade maxima do heap
 
 typedef struct {
-    int dados[CAP];
-    int tam;
+    int dados[CAP]; // vetor que armazena os turnos de vencimento
+    int tam; // quantidade de elementos armazenados
 } HeapMinimo;
 
 // inicializa um heap vazio

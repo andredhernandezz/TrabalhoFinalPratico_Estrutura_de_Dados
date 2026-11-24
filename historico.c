@@ -7,12 +7,12 @@
 #include "ordenacao.h"
 #include "timer.h"
 
-#define MAX_LINHA 256
-#define MAX_NOME 20
-#define LINHAS_HISTORICO 20
+#define MAX_LINHA 256 // tamanho do buffer utilizado na leitura
+#define MAX_NOME 20 // quantidade maxima de caracteres do nome ao salvar
+#define LINHAS_HISTORICO 20 // quantidade maxima de registros exibidos
 
 /* Le uma linha de f em buf, sem \r/\n. Descarta o excedente de linhas longas.
-   Retorna 1 se leu, 0 se chegou ao fim do arquivo. */
+   Retorna 1 se leu, 0 se chegou ao fim do arquivo ou ocorreu erro de leitura. */
 static int lerLinha(FILE *f, char *buf, size_t n) {
     if (!fgets(buf, (int)n, f))
         return 0;
@@ -24,7 +24,8 @@ static int lerLinha(FILE *f, char *buf, size_t n) {
     return 1;
 }
 
-// verifica se a pontuacao e um inteiro valido (-2147483648 a 2147483647)
+// verifica se a pontuacao representa um inteiro valido de 32 bits
+// retorna 1 se valida e 0 caso contrario
 static int pontuacaoValida(const char *texto) {
     int i = 0;
     int negativo = 0;
@@ -70,6 +71,9 @@ static int pontuacaoValida(const char *texto) {
     return 1;
 }
 
+// le os registros do arquivo e insere os registros validos na lista contigua
+// retorna a quantidade de registros carregados ou -1 em caso de parametros invalidos ou falha de insercao
+// retorna 0 se nao conseguir abrir o arquivo
 int carregarHistorico(const char *nomeArquivo, ListaContig *lista) {
     // verifica se os parametros e a lista sao validos
     if (nomeArquivo == NULL || lista == NULL || lista->dados == NULL)
@@ -77,13 +81,14 @@ int carregarHistorico(const char *nomeArquivo, ListaContig *lista) {
 
     FILE *f = fopen(nomeArquivo, "r");
 
-    // se o arquivo nao existir, considera o historico vazio
+    // se nao conseguir abrir o arquivo, considera o historico vazio
     if (f == NULL)
         return 0;
 
     char linhaNome[MAX_LINHA], linhaPont[MAX_LINHA];
     int carregadas = 0;
 
+    // le os registros em pares de linhas: nome e pontuacao
     while (lerLinha(f, linhaNome, sizeof linhaNome) &&
            lerLinha(f, linhaPont, sizeof linhaPont)) {
 
@@ -112,6 +117,8 @@ int carregarHistorico(const char *nomeArquivo, ListaContig *lista) {
     return carregadas;
 }
 
+// acrescenta uma partida ao final do arquivo e da lista contigua
+// retorna 1 em caso de sucesso e 0 em caso de falha
 int salvarPartida(const char *nomeArquivo, ListaContig *lista, const char *nome, int pontuacao) {
     // verifica se os parametros recebidos sao validos
     if (nomeArquivo == NULL || lista == NULL || nome == NULL || lista->dados == NULL)
@@ -206,12 +213,17 @@ int salvarPartida(const char *nomeArquivo, ListaContig *lista, const char *nome,
 
     return 1;
 }
- 
+
+// ordena uma copia do historico por nome ou pontuacao utilizando quicksort
+// exibe os primeiros 20 registros e informa o tempo de ordenacao
+// retorna o total de registros ou -1 em caso de falha
 int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempoOrdenacao) {
+    // cria uma copia para preservar a ordem original do historico
     ListaContig copia;
     if (copiaListaContig(lista, &copia) != 1)
         return -1;
- 
+
+    // cronometra somente a ordenacao, sem incluir o tempo de copia ou exibicao
     Timer t;
     timer_iniciar(&t);
     int ok = porPontuacao ? quicksortPontuacao(&copia)
@@ -222,6 +234,7 @@ int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempoOr
         destroiListaContig(&copia);
         return -1;
     }
+    // disponibiliza o tempo medido caso o ponteiro tenha sido informado
     if (tempoOrdenacao)
         *tempoOrdenacao = s;
  
@@ -231,6 +244,7 @@ int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempoOr
     if (total == 0)
         printf("Nenhuma partida registrada.\n");
  
+    // exibe apenas os primeiros registros ate o limite definido
     for (int i = 0; i < total && i < LINHAS_HISTORICO; i++) {
         NovoHistorico h;
         obtemContig(&copia, i, &h);
@@ -239,6 +253,7 @@ int mostrarHistorico(const ListaContig *lista, int porPontuacao, double *tempoOr
     if (total > LINHAS_HISTORICO)
         printf("... e mais %d entradas\n", total - LINHAS_HISTORICO);
  
+    // libera a copia temporaria, preservando o historico original
     destroiListaContig(&copia);
     return total;
 }

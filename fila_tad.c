@@ -2,14 +2,17 @@
 #include <stdlib.h>
 #include "fila_tad.h"
 
+// inicializa uma fila vazia, definindo os ponteiros frente e final como NULL
 void inicializaFila(FilaEnc *f){
     if (f == NULL)
-        return; // retorna erro por endereço de fila inválido
+        return; // encerra a funcao se o endereco da fila for invalido
 
     f->frente = NULL;
     f->final = NULL;
 }
 
+// verifica se a fila esta vazia
+// retorna 1 se vazia, 0 se nao vazia e -1 se a fila for invalida
 int filaVazia(const FilaEnc *f){
     if (f == NULL)
         return -1; // retorna erro por fila não inicializada
@@ -17,6 +20,8 @@ int filaVazia(const FilaEnc *f){
     return f->frente == NULL;
 }
 
+// consulta os dados do primeiro cliente sem remove-lo da fila
+// retorna 1 se sucesso, 0 se fila vazia e -1 se os parametros forem invalidos
 int frenteFila(const FilaEnc *f, Cliente *cliente){
     if (f == NULL || cliente == NULL)
         return -1; // retorna erro por fila não inicializada ou cliente inválido
@@ -27,6 +32,8 @@ int frenteFila(const FilaEnc *f, Cliente *cliente){
     return 1; // deu certo
 } 
 
+// insere um novo cliente no final da fila em O(1)
+// retorna 1 se sucesso, 0 se falha de alocacao e -1 se a fila for invalida
 int enqueue(FilaEnc *f, Cliente cliente){
     
     if (f == NULL)
@@ -48,6 +55,8 @@ int enqueue(FilaEnc *f, Cliente cliente){
     return 1;
 }
 
+// remove o primeiro cliente da fila e copia seus dados em O(1)
+// retorna 1 se sucesso, 0 se fila vazia e -1 se os parametros forem invalidos
 int dequeue(FilaEnc *f, Cliente *cliente){
     if (f == NULL || cliente == NULL)
         return -1; // retorna erro por fila não inicializada ou cliente inválido
@@ -68,6 +77,8 @@ int dequeue(FilaEnc *f, Cliente *cliente){
     return 1; // deu certo
 }
 
+// percorre a fila para contar a quantidade de clientes em O(n)
+// retorna -1 se a fila for invalida
 int tamanhoFila(const FilaEnc *f){
     if (f == NULL)
         return -1; // retorna erro por fila não inicializada
@@ -83,6 +94,7 @@ int tamanhoFila(const FilaEnc *f){
     return contador;
 }
 
+// percorre a fila e imprime o nome e o pedido de cada cliente
 void imprimeFila(const FilaEnc *f){
     
     if (f == NULL) {
@@ -104,6 +116,7 @@ void imprimeFila(const FilaEnc *f){
     }
 }
 
+// libera todos os nodos da fila e redefine os ponteiros frente e final
 void esvaziaFila(FilaEnc *f){
     if (f == NULL) {
         printf("ERRO em esvaziaFila: Fila não inicializada.\n");
@@ -127,6 +140,8 @@ void esvaziaFila(FilaEnc *f){
     f->final = NULL;
 }
 
+// consulta os dados do segundo cliente sem remove-lo da fila
+// retorna 1 se sucesso, 0 se nao existir segundo cliente e -1 se os parametros forem invalidos
 int segundoFila(const FilaEnc *f, Cliente *cliente) {
 
     // Verifica se os parametros recebidos sao validos.

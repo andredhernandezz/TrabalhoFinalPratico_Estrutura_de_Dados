@@ -34,8 +34,8 @@ static int sorteiaIndice(int limite) {
     return (int)(numero % limite); // retorna um índice entre 0 e limite-1
 }
 
-// recebe o input do símbolo do ingrediente
-// retorna 1 em caso de sucesso e 0 se for simbolo invalido
+// identifica os ingredientes que precisam ser preparados e armazenados no estoque
+// retorna 1 se o ingrediente pertence ao estoque e 0 caso contrário
 static int identificaIngrediente(char simbolo, IngredienteEstoque *ing){
     switch(simbolo){
         case 's':
@@ -95,6 +95,7 @@ static int consultaPedido(Jogo *j, int cod, Pedido *pedido){
         return 1; // encontrado no hash  
     }
     
+    // registra as métricas antes da busca para calcular o custo desta operação
     Contador antes = avlObterMetricas();
 
     Timer t;
@@ -106,6 +107,7 @@ static int consultaPedido(Jogo *j, int cod, Pedido *pedido){
 
     Contador depois = avlObterMetricas();
 
+    // acumula as métricas das buscas realizadas na AVL durante a partida
     j->buscas.buscas++;
     j->buscas.comparacoes += depois.comparacoes - antes.comparacoes;
     j->buscas.tempo += tempo;
@@ -137,6 +139,7 @@ static void avancaTurno(Jogo *j){
 
 }
 
+// libera as estruturas utilizadas na partida, preservando a AVL de pedidos
 void destroiJogo(Jogo *j) {
     if (j == NULL) 
         return;
@@ -149,6 +152,8 @@ void destroiJogo(Jogo *j) {
     memset(j, 0, sizeof(Jogo)); // limpa a estrutura do jogo
 }
 
+// inicializa as estruturas do jogo, sorteia os pedidos e monta a fila de clientes
+// retorna 1 em caso de sucesso e 0 em caso de falha
 int iniciaJogo(Jogo *j, NodoAvl *raiz, int numClientes, int pacienciaMax) {
     if (j == NULL || raiz == NULL || numClientes <= 0 || numClientes > MAX_CLIENTES || pacienciaMax <= 0 || pacienciaMax > MAX_PACIENCIA)
         return 0; // parâmetros inválidos
@@ -260,6 +265,8 @@ ResultadoAcao jogoPrepara(Jogo *j, char simbolo){
     return ACAO_SUCESSO;
 }
 
+// adiciona um ingrediente ao hambúrguer, consumindo o estoque quando necessário
+// ao adicionar o pão superior, verifica se o pedido foi concluído corretamente
 ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
     char topo;
     IngredienteEstoque ing;
@@ -351,7 +358,7 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
                 // Isso mantem o estoque atualizado mesmo no encerramento da partida.
                 verificaVencimentos(&j->estoque, j->turno);
 
-                // Calcula a pontuacao usando a paciencia restante do cliente.
+                // Atualiza a pontuacao (numero de clientes atendidos).
                 j->pontuacao++;
 
                 // Como todos os clientes foram atendidos, encerra com vitoria.
@@ -362,7 +369,8 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
             }
 
             /* ainda existem clientes depois do atual.
-            primeiro prepara a receita do proximo cliente em uma lista temporaria.
+            primeiro prepara a receita do proximo cliente em uma lista temporaria
+            para evitar inconsistencias na partida em caso de falha de memoria.
             */
             Cliente proximo;
             ListaEnc proximaReceita;
@@ -430,6 +438,8 @@ ResultadoAcao jogoAdiciona(Jogo *j, char simbolo){
     return ACAO_SUCESSO;
 }
 
+// remove o ingrediente do topo da pilha sem devolvê-lo ao estoque
+// a remoção consome um turno
 ResultadoAcao jogoRemove(Jogo *j){
     char removido;
     int resultado; // usado para verificar o retorno das funções
@@ -450,6 +460,7 @@ ResultadoAcao jogoRemove(Jogo *j){
     return ACAO_SUCESSO;
 }
 
+// encerra a partida por abandono sem consumir um turno
 ResultadoAcao jogoAbandona(Jogo *j){
     // nao faz nada se o ponteiro for inválido ou a partida já terminou.
     if (j == NULL || j->status != JOGO_ANDAMENTO) {

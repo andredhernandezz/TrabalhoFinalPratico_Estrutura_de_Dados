@@ -1,23 +1,23 @@
 #include <stdlib.h>
 #include "avl_tad.h"
 
-static Contador contador;
+static Contador contador; // armazena as metricas de desempenho da AVL
 
 static int erroInsercao = 0; // registra se a ultima insercao falhou por falta de memoria
 
-
+// zera os contadores de rotacoes, nodos inseridos e comparacoes
 void avlZerarMetricas(void){
     contador.rotacoes = 0;
     contador.nosInserido = 0;
     contador.comparacoes = 0;
 }
 
+// retorna os valores atuais dos contadores de desempenho da AVL
 Contador avlObterMetricas(void){
     return contador;
 }
 
-
-
+// retorna a altura do nodo, considerando 0 para arvore vazia e 1 para folha
 int avlAltura(const NodoAvl *no) {
     if (no == NULL) return 0;
     if ((no->esq == NULL) && (no->dir == NULL)){
@@ -99,7 +99,9 @@ NodoAvl* avlReequilibrar(NodoAvl *raiz) {
     return raiz;   /* sem desequilíbrio */
 }
 
-/* Busca: idêntica à Abp — a altura garantida torna-a O(log n). */
+/* Busca um pedido pelo codigo, contabilizando os nodos visitados.
+   Assim como na ABP, percorre apenas um caminho da arvore.
+   O balanceamento da AVL garante o custo O(log n). */
 NodoAvl* avlBuscar(NodoAvl *raiz, int cod) {
     if (raiz == NULL)
         return NULL;

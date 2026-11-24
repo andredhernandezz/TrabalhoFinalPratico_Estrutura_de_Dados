@@ -25,7 +25,7 @@ typedef enum{
     ACAO_SIMBOLO_INVALIDO, // símbolo digitado é inválido
     ACAO_SEM_ESTOQUE, // não há ingredientes suficientes em estoque
     ACAO_ESTOQUE_CHEIO, // limite de armazenamento do ingrediente atingido
-    ACAO_PRATO_FECHADO, // o prato já foi fechado e não pode ser modificado
+    ACAO_PRATO_FECHADO, // o prato foi fechado e não aceita novos ingredientes 
     ACAO_PRATO_VAZIO, // não há ingredientes para remover
     ACAO_JOGO_ENCERRADO, // a partida já foi encerrada e não pode ser continuada
     ACAO_ERRO_MEMORIA, // erro de alocação de memória durante a execução da ação
@@ -47,7 +47,7 @@ typedef struct{
     int pacienciaMax; // paciencia maxima de cada cliente
     int atendidos; // quantidade de clientes atendidos
     int totalClientes; // quantidade total de clientes da partida
-    int pontuacao; // pontuacao acumulada durante a partida
+    int pontuacao; // pontuacao correspondente ao numero de clientes atendidos
 
     StatusJogo status; // estado atual da partida
 
@@ -65,12 +65,14 @@ ResultadoAcao jogoPrepara(Jogo *j, char simbolo);
 ResultadoAcao jogoAdiciona(Jogo *j, char simbolo);
 
 // remove o ingrediente que está no topo do hambúrguer.
+// consome um turno e não devolve o ingrediente ao estoque.
 ResultadoAcao jogoRemove(Jogo *j);
 
 // encerra a partida por decisão do jogador.
 ResultadoAcao jogoAbandona(Jogo *j);
 
 // libera a memória utilizada pelas estruturas da partida.
+// preserva a AVL de pedidos para as próximas partidas.
 void destroiJogo(Jogo *j);
 
 #endif

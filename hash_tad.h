@@ -4,13 +4,13 @@
 #include "pedido.h"
 
 
-#define HASH_M_PADRAO 101 // numero primo 101 (escolha logica)
+#define HASH_M_PADRAO 101 // tamanho padrao da tabela hash (numero primo)
  
 // No da lista encadeada de uma posicao da tabela (encadeamento separado)
 typedef struct str_NoHash NoHash;
 struct str_NoHash {
-    Pedido  dado;
-    NoHash *prox;
+    Pedido dado;  // pedido armazenado no nodo
+    NoHash *prox;  // ponteiro para o proximo nodo da lista
 };
  
 typedef struct {
@@ -23,6 +23,7 @@ typedef struct {
 } TabelaHash;
  
 // Funcao de hash por divisao: h(chave) = chave mod m, sempre em [0, m-1]
+// Retorna -1 se m for menor ou igual a zero
 int hashDivisao(int chave, int m);
  
 // Cria a tabela vazia com m posicoes e zera os contadores. Retorna 1 se ok, 0 em caso de erro
@@ -33,7 +34,8 @@ int hashBuscar(TabelaHash *t, int cod, Pedido *out);
  
 /* Insere o pedido no inicio da lista da posicao h(cod).
    Conta uma colisao se a posicao ja tinha alguma entrada.
-   Se o codigo ja existe, nao duplica. Retorna 1 se ok, 0 se faltou memoria. */
+   Se o codigo ja existe, nao duplica.
+   Retorna 1 se ok ou se o pedido ja existe, 0 em caso de erro. */
 int hashInserir(TabelaHash *t, Pedido p);
  
 // Libera toda a memoria da tabela.

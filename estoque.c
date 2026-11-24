@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "estoque.h"
 
+// inicializa os heaps dos pereciveis e zera os contadores dos nao pereciveis
 void inicializaEstoque(Estoque *estoque){
     if (estoque == NULL) // verifica se estoque é inválido
         return;
@@ -14,6 +15,8 @@ void inicializaEstoque(Estoque *estoque){
     estoque->tomate = 0;
 }
 
+// adiciona uma unidade preparada ao estoque do ingrediente
+// retorna 1 em caso de sucesso, 0 se o heap estiver cheio e -1 em caso de erro
 int preparaIngrediente(Estoque *estoque, IngredienteEstoque ing, int turnoAtual){
     if (estoque == NULL || turnoAtual < 0) // verifica se estoque ou turnoAtual são invalidos
         return -1;
@@ -47,8 +50,10 @@ int preparaIngrediente(Estoque *estoque, IngredienteEstoque ing, int turnoAtual)
     }
 }
 
+// consome uma unidade do ingrediente, priorizando a de menor vencimento para os pereciveis
+// retorna 1 em caso de sucesso, 0 se nao houver unidades e -1 em caso de erro
 int consomeIngrediente(Estoque *estoque, IngredienteEstoque ing){
-    if (estoque == NULL) // verfica se estoque é inválido
+    if (estoque == NULL) // verifica se estoque é inválido
         return -1;
     
     int vencimento; // para armazenar o turno de vencimento removido do heap    
@@ -92,6 +97,7 @@ int consomeIngrediente(Estoque *estoque, IngredienteEstoque ing){
     }
 }
 
+// remove as unidades vencidas de um heap e retorna a quantidade descartada
 static int descartaVencidos(HeapMinimo *heap, int turnoAtual){
     if (heap == NULL || turnoAtual < 0) // verifica se heap ou turnoAtual são invalidos
         return -1;
@@ -108,6 +114,8 @@ static int descartaVencidos(HeapMinimo *heap, int turnoAtual){
     return descartados;
 }
 
+// verifica e descarta os ingredientes pereciveis vencidos no turno atual
+// retorna o total de unidades descartadas ou -1 em caso de erro
 int verificaVencimentos(Estoque *estoque, int turnoAtual){
     if (estoque == NULL || turnoAtual < 0) // verifica se estoque ou turnoAtual são invalidos
         return -1;
@@ -117,6 +125,8 @@ int verificaVencimentos(Estoque *estoque, int turnoAtual){
            descartaVencidos(&estoque->bacon, turnoAtual);
 }
 
+// retorna a quantidade de unidades preparadas do ingrediente
+// retorna -1 em caso de erro
 int consultaEstoque(const Estoque *estoque, IngredienteEstoque ing){
     if (estoque == NULL) // verifica se estoque é invalido
         return -1;
@@ -144,7 +154,7 @@ int consultaEstoque(const Estoque *estoque, IngredienteEstoque ing){
     }
 }
 
-// consulta a validade restante do ingrediente perecivel
+// consulta quantos turnos faltam para o vencimento da unidade que vence primeiro
 int consultaValidade(const Estoque *estoque, IngredienteEstoque ing, int turnoAtual) {
     int vencimento;
     int resultado;

@@ -3,11 +3,15 @@
 
 #include <time.h>
 
+// estrutura utilizada para medir o tempo de CPU
 typedef struct {
-    clock_t inicio;
+    clock_t inicio; // instante inicial da medicao
 } Timer;
 
+// inicia a medicao
 void timer_iniciar(Timer *t);
-double timer_parar(Timer *t); /* retorna tempo em segundos */
+
+// retorna o tempo de CPU decorrido em segundos
+double timer_parar(Timer *t);
 
 #endif
