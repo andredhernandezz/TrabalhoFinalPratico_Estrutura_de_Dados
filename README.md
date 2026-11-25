@@ -51,6 +51,3 @@ Parâmetros: 10 clientes por partida, paciência de 15 turnos, validade de 4 tur
 
 Opcional, não faz parte da compilação padrão. Requer a Raylib; instruções em `LEIA-ME_GUI.md` (`build_gui.bat` no Windows).
 
-## Declaração de uso de IA
-
-Consta no relatório em PDF.
